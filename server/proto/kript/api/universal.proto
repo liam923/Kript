@@ -1,0 +1,24 @@
+syntax="proto3";
+package kript.api;
+
+// An enumeration of different password hashing algorithms.
+enum HashAlgorithm {
+  // Concatenate password + salt and use SHA-512.
+  SHA_512 = 0;
+}
+
+// An enumeration of different symmetric encryption algorithms.
+enum SEncryptionAlgorithm {
+  // Encrypt using AES with a given key.
+  AES = 0;
+}
+
+// An enumeration of different asymmetric encryption algorithms.
+enum AEncryptionAlgorithm {
+  // Encrypt using AES with a given key.
+  RSA = 0;
+}
+
+message AccessToken {
+
+}

@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/grpclog"
 
 	"github.com/liam923/Kript/server/internal/server"
-	pbExample "github.com/liam923/Kript/server/proto"
+	"github.com/liam923/Kript/server/proto/kript/api"
 )
 
 var (
@@ -39,7 +39,8 @@ func main() {
 		log.Fatalln("Failed to listen:", err)
 	}
 	s := grpc.NewServer()
-	pbExample.RegisterUserServiceServer(s, server.New())
+	kript_api.RegisterDataServiceServer(s, server.New())
+	kript_api.RegisterAccountServiceServer(s, server.New())
 
 	// Serve gRPC Server
 	log.Info("Serving gRPC on http://", addr)
@@ -71,7 +72,11 @@ func main() {
 		// marshalled in unary requests.
 		runtime.WithProtoErrorHandler(runtime.DefaultHTTPProtoErrorHandler),
 	)
-	err = pbExample.RegisterUserServiceHandler(context.Background(), gwmux, conn)
+	err = kript_api.RegisterDataServiceHandler(context.Background(), gwmux, conn)
+	if err != nil {
+		log.Fatalln("Failed to register gateway:", err)
+	}
+	err = kript_api.RegisterAccountServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		log.Fatalln("Failed to register gateway:", err)
 	}

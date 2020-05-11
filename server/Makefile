@@ -3,7 +3,6 @@ install:
 		github.com/gogo/protobuf/protoc-gen-gogo \
 		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
 		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
-		github.com/mwitkow/go-proto-validators/protoc-gen-govalidators \
 		github.com/golang/mock/mockgen
 
 vendor:
@@ -38,29 +37,16 @@ generate:
 		-I vendor/ \
 		--gogo_out=plugins=grpc,paths=source_relative,\
 Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
-Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,\
-Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
-Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api,\
-Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types:\
+Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api:\
 ./proto/ \
 		--grpc-gateway_out=allow_patch_feature=false,paths=source_relative,\
 Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
-Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,\
-Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
-Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api,\
-Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types:\
+Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api:\
 ./proto/ \
 		--swagger_out=./ \
-		--govalidators_out=gogoimport=true,paths=source_relative,\
-Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
-Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,\
-Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
-Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api,\
-Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types:\
-./proto \
-		proto/example.proto
+		proto/kript/api/*.proto
 
 	# Workaround for https://github.com/grpc-ecosystem/grpc-gateway/issues/229.
-	sed -i.bak "s/empty.Empty/types.Empty/g" proto/example.pb.gw.go && rm proto/example.pb.gw.go.bak
+	sed -i.bak "s/empty.Empty/types.Empty/g" proto/kript/api/*.pb.gw.go && rm proto/kript/api/*.pb.gw.go.bak
 
 	go generate ./...

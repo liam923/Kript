@@ -1,0 +1,644 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "kript/api/account.proto",
+    "version": "1.0"
+  },
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/account/change-password": {
+      "post": {
+        "summary": "Change the user's password.",
+        "operationId": "AccountService_UpdatePassword",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiUpdatePasswordResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUpdatePasswordRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AccountService"
+        ]
+      }
+    },
+    "/account/create": {
+      "post": {
+        "summary": "Create an account.",
+        "operationId": "AccountService_CreateAccount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiCreateAccountResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiCreateAccountRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AccountService"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Login the user. If the user has 2-factor authentication enabled,\na verification code must be sent with SendVerification to complete the\nlogin process.",
+        "operationId": "AccountService_LoginUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiLoginUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiLoginUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AccountService"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "summary": "Fetch a new access token.",
+        "operationId": "AccountService_RefreshAuth",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiRefreshAuthResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiRefreshAuthRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AccountService"
+        ]
+      }
+    },
+    "/auth/verify": {
+      "post": {
+        "summary": "Complete logging in the user.",
+        "operationId": "AccountService_VerifyUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiVerifyUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiVerifyUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AccountService"
+        ]
+      }
+    },
+    "/auth/verify/send": {
+      "post": {
+        "summary": "Send a verification code to the user using the specified method.",
+        "operationId": "AccountService_SendVerification",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiSendVerificationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiSendVerificationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AccountService"
+        ]
+      }
+    },
+    "/user": {
+      "get": {
+        "summary": "Get the information of the user with the given username or user id.\nIf the user is the logged in user, the private user information is\nincluded.",
+        "operationId": "AccountService_GetUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "description": "The username of the user.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "description": "The id of the user.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AccountService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "LoginUserResponseTwoFactorInfo": {
+      "type": "object",
+      "properties": {
+        "verification_token": {
+          "$ref": "#/definitions/apiVerificationToken",
+          "description": "The token used to identify the user through the verification process."
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiTwoFactor"
+          },
+          "description": "The options available for two-factor authentication."
+        }
+      },
+      "description": "Represents the relevant information for the two-factor authentication\nprocess to continue."
+    },
+    "TwoFactorTwoFactorType": {
+      "type": "string",
+      "enum": [
+        "PHONE_TEXT",
+        "PHONE_CALL",
+        "EMAIL"
+      ],
+      "default": "PHONE_TEXT",
+      "description": "An enumeration of type of two-factor authentication.\n\n - PHONE_TEXT: A code via text message.\n - PHONE_CALL: A code via phone call.\n - EMAIL: A code via email."
+    },
+    "apiAEncryptionAlgorithm": {
+      "type": "string",
+      "enum": [
+        "RSA"
+      ],
+      "default": "RSA",
+      "description": "An enumeration of different asymmetric encryption algorithms.\n\n - RSA: Encrypt using AES with a given key."
+    },
+    "apiAccessToken": {
+      "type": "object"
+    },
+    "apiCreateAccountRequest": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "The username of the user."
+        },
+        "password": {
+          "type": "string",
+          "description": "The hashed password of the user."
+        },
+        "salt": {
+          "type": "string",
+          "description": "The salt used in the new hashed password."
+        },
+        "password_hash_algorithm": {
+          "$ref": "#/definitions/apiHashAlgorithm",
+          "description": "The hashing algorithm used to hash the user's password."
+        },
+        "public_key": {
+          "type": "string",
+          "description": "The user's public key."
+        },
+        "private_key": {
+          "type": "string",
+          "description": "The user's private key, encrypted using the user's password."
+        },
+        "data_encryption_algorithm": {
+          "type": "string",
+          "description": "The encryption algorithm used to encrypt the user's data."
+        },
+        "private_key_encryption_algorithm": {
+          "type": "string",
+          "description": "The encryption algorithm used to encrypt the user's private key."
+        }
+      }
+    },
+    "apiCreateAccountResponse": {
+      "type": "object",
+      "properties": {
+        "response": {
+          "$ref": "#/definitions/apiSuccessfulLoginMessage",
+          "description": "The user's authentication and information."
+        }
+      }
+    },
+    "apiGetUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/apiUser",
+          "description": "The information of the specified user."
+        }
+      }
+    },
+    "apiHashAlgorithm": {
+      "type": "string",
+      "enum": [
+        "SHA_512"
+      ],
+      "default": "SHA_512",
+      "description": "An enumeration of different password hashing algorithms.\n\n - SHA_512: Concatenate password + salt and use SHA-512."
+    },
+    "apiLoginUserRequest": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "The username of the user."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "The id of the user."
+        },
+        "password": {
+          "type": "string",
+          "description": "The hashed password of the user."
+        }
+      }
+    },
+    "apiLoginUserResponse": {
+      "type": "object",
+      "properties": {
+        "two_factor": {
+          "$ref": "#/definitions/LoginUserResponseTwoFactorInfo",
+          "description": "The two-factor authentication information if two-factor authentication\nis enabled."
+        },
+        "response": {
+          "$ref": "#/definitions/apiSuccessfulLoginMessage",
+          "description": "The user's authentication and information if two-factor authentication\nis disabled."
+        }
+      }
+    },
+    "apiPrivateUser": {
+      "type": "object",
+      "properties": {
+        "private_key": {
+          "type": "string",
+          "description": "The user's private key, encrypted with the user's password."
+        },
+        "private_key_ncryption_algorithm": {
+          "$ref": "#/definitions/apiSEncryptionAlgorithm",
+          "description": "The encryption algorithm used to encrypt the private key."
+        }
+      },
+      "description": "Private information about a user that is only visible to the user."
+    },
+    "apiPublicUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The id of the user."
+        },
+        "username": {
+          "type": "string",
+          "description": "The username of the user."
+        },
+        "public_key": {
+          "type": "string",
+          "description": "The user's public key."
+        },
+        "salt": {
+          "type": "string",
+          "description": "The salt used to hash the user's password."
+        },
+        "password_hash_algorithm": {
+          "$ref": "#/definitions/apiHashAlgorithm",
+          "description": "The hashing algorithm used to hash the user's password."
+        },
+        "data_encryption_algorithm": {
+          "$ref": "#/definitions/apiAEncryptionAlgorithm",
+          "description": "The encryption algorithm used to encrypt the user's data."
+        }
+      },
+      "description": "The public information about a user that is visible to anyone."
+    },
+    "apiRefreshAuthRequest": {
+      "type": "object",
+      "properties": {
+        "refresh_token": {
+          "$ref": "#/definitions/apiRefreshToken",
+          "description": "The refresh token to identify and authenticate the user."
+        }
+      }
+    },
+    "apiRefreshAuthResponse": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "$ref": "#/definitions/apiAccessToken",
+          "description": "The access token to identify and authenticate the user."
+        }
+      }
+    },
+    "apiRefreshToken": {
+      "type": "object"
+    },
+    "apiSEncryptionAlgorithm": {
+      "type": "string",
+      "enum": [
+        "AES"
+      ],
+      "default": "AES",
+      "description": "An enumeration of different symmetric encryption algorithms.\n\n - AES: Encrypt using AES with a given key."
+    },
+    "apiSendVerificationRequest": {
+      "type": "object",
+      "properties": {
+        "verification_token": {
+          "$ref": "#/definitions/apiVerificationToken",
+          "description": "The token used to identify the user through the verification process."
+        },
+        "option": {
+          "$ref": "#/definitions/apiTwoFactor",
+          "description": "The two-factor authentication option used."
+        }
+      }
+    },
+    "apiSendVerificationResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Whether or not sending the verification code was successful."
+        },
+        "destination": {
+          "$ref": "#/definitions/apiTwoFactor",
+          "description": "The two-factor authentication option used."
+        }
+      }
+    },
+    "apiSuccessfulLoginMessage": {
+      "type": "object",
+      "properties": {
+        "refresh_token": {
+          "$ref": "#/definitions/apiRefreshToken",
+          "description": "The refresh token to identify and authenticate the user."
+        },
+        "user": {
+          "$ref": "#/definitions/apiUser",
+          "description": "The user's information."
+        }
+      }
+    },
+    "apiTwoFactor": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The identifier of this two-factor authentication method."
+        },
+        "type": {
+          "$ref": "#/definitions/TwoFactorTwoFactorType",
+          "description": "The type of two-factor authentication."
+        },
+        "destination": {
+          "type": "string",
+          "description": "Where the two-factor authentication code is sent (phone, email, etc.)."
+        }
+      },
+      "description": "A way to send/receive a two-factor authentication code."
+    },
+    "apiUpdatePasswordRequest": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "$ref": "#/definitions/apiAccessToken",
+          "description": "The access token to identify and authenticate the user."
+        },
+        "old_password": {
+          "type": "string",
+          "description": "The old hashed password of the user."
+        },
+        "new_password": {
+          "type": "string",
+          "description": "The new hashed password of the user."
+        },
+        "new_salt": {
+          "type": "string",
+          "description": "The salt used in the new hashed password."
+        },
+        "password_hash_algorithm": {
+          "$ref": "#/definitions/apiHashAlgorithm",
+          "description": "The hashing algorithm used to hash the user's new password."
+        },
+        "private_key": {
+          "type": "string",
+          "description": "The user's private key, re-encrypted with the user's new password."
+        },
+        "private_key_encryption_algorithm": {
+          "$ref": "#/definitions/apiSEncryptionAlgorithm",
+          "description": "The encryption algorithm used to encrypt the user's private key."
+        }
+      }
+    },
+    "apiUpdatePasswordResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/apiUser",
+          "description": "The user's information."
+        }
+      }
+    },
+    "apiUser": {
+      "type": "object",
+      "properties": {
+        "public": {
+          "$ref": "#/definitions/apiPublicUser",
+          "description": "The user's public information."
+        },
+        "private": {
+          "$ref": "#/definitions/apiPrivateUser",
+          "description": "The user's private information."
+        }
+      },
+      "description": "The public and private information about a user."
+    },
+    "apiVerificationToken": {
+      "type": "object"
+    },
+    "apiVerifyUserRequest": {
+      "type": "object",
+      "properties": {
+        "verification_token": {
+          "$ref": "#/definitions/apiVerificationToken",
+          "description": "The token used to identify the user through the verification process."
+        },
+        "destination": {
+          "$ref": "#/definitions/apiTwoFactor",
+          "description": "The two-factor authentication option used."
+        },
+        "code": {
+          "type": "string",
+          "description": "The two-factor authentication code received on the specified destination."
+        }
+      }
+    },
+    "apiVerifyUserResponse": {
+      "type": "object",
+      "properties": {
+        "response": {
+          "$ref": "#/definitions/apiSuccessfulLoginMessage",
+          "description": "The user's authentication and information."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      },
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := \u0026pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Kript",
+    "url": "https://github.com/liam923/Kript"
+  }
+}

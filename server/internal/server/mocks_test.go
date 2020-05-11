@@ -7,7 +7,7 @@ package server_test
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	example "github.com/liam923/Kript/server/proto"
+	proto "github.com/liam923/Kript/server/proto"
 	metadata "google.golang.org/grpc/metadata"
 	reflect "reflect"
 )
@@ -64,7 +64,7 @@ func (mr *MockUserService_ListUsersServerMockRecorder) RecvMsg(arg0 interface{})
 }
 
 // Send mocks base method
-func (m *MockUserService_ListUsersServer) Send(arg0 *example.User) error {
+func (m *MockUserService_ListUsersServer) Send(arg0 *proto.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Send", arg0)
 	ret0, _ := ret[0].(error)
@@ -183,7 +183,7 @@ func (mr *MockUserService_ListUsersByRoleServerMockRecorder) RecvMsg(arg0 interf
 }
 
 // Send mocks base method
-func (m *MockUserService_ListUsersByRoleServer) Send(arg0 *example.User) error {
+func (m *MockUserService_ListUsersByRoleServer) Send(arg0 *proto.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Send", arg0)
 	ret0, _ := ret[0].(error)

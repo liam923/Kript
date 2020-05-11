@@ -1,0 +1,278 @@
+syntax="proto3";
+package kript.api;
+
+import "kript/api/universal.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-swagger/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+  info: {
+    version: "1.0";
+  };
+  external_docs: {
+    url: "https://github.com/liam923/Kript";
+    description: "Kript";
+  }
+  schemes: HTTPS;
+};
+
+// The public information about a user that is visible to anyone.
+message PublicUser {
+  // The id of the user.
+  string id = 1;
+  // The username of the user.
+  string username = 2;
+  // The user's public key.
+  string public_key = 3;
+  // The salt used to hash the user's password.
+  string salt = 4;
+  // The hashing algorithm used to hash the user's password.
+  HashAlgorithm password_hash_algorithm = 5;
+  // The encryption algorithm used to encrypt the user's data.
+  AEncryptionAlgorithm data_encryption_algorithm = 6;
+}
+
+// Private information about a user that is only visible to the user.
+message PrivateUser {
+  // The user's private key, encrypted with the user's password.
+  string private_key = 1;
+  // The encryption algorithm used to encrypt the private key.
+  SEncryptionAlgorithm private_key_ncryption_algorithm = 2;
+}
+
+// The public and private information about a user.
+message User {
+  // The user's public information.
+  PublicUser public = 1;
+  // The user's private information.
+  PrivateUser private = 2;
+}
+
+message VerificationToken {
+
+}
+
+message RefreshToken {
+
+}
+
+message SuccessfulLoginMessage {
+  // The refresh token to identify and authenticate the user.
+  RefreshToken refresh_token = 1;
+  // The user's information.
+  User user = 2;
+}
+
+// A way to send/receive a two-factor authentication code.
+message TwoFactor {
+  // An enumeration of type of two-factor authentication.
+  enum TwoFactorType {
+    // A code via text message.
+    PHONE_TEXT = 0;
+    // A code via phone call.
+    PHONE_CALL = 1;
+    // A code via email.
+    EMAIL = 2;
+  }
+  // The identifier of this two-factor authentication method.
+  string id = 1;
+  // The type of two-factor authentication.
+  TwoFactorType type = 2;
+  // Where the two-factor authentication code is sent (phone, email, etc.).
+  string destination = 3;
+}
+
+service AccountService {
+  // Login the user. If the user has 2-factor authentication enabled,
+  // a verification code must be sent with SendVerification to complete the
+  // login process.
+  rpc LoginUser (LoginUserRequest) returns (LoginUserResponse) {
+    option (google.api.http) = {
+      post: "/auth/login"
+      body: "*"
+    };
+  }
+
+  // Send a verification code to the user using the specified method.
+  rpc SendVerification (SendVerificationRequest) returns (SendVerificationResponse) {
+    option (google.api.http) = {
+      post: "/auth/verify/send"
+      body: "*"
+    };
+  }
+
+  // Complete logging in the user.
+  rpc VerifyUser (VerifyUserRequest) returns (VerifyUserResponse) {
+    option (google.api.http) = {
+      post: "/auth/verify"
+      body: "*"
+    };
+  }
+
+  // Change the user's password.
+  rpc UpdatePassword (UpdatePasswordRequest) returns (UpdatePasswordResponse) {
+    option (google.api.http) = {
+      post: "/account/change-password"
+      body: "*"
+    };
+  }
+
+  // Create an account.
+  rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse) {
+    option (google.api.http) = {
+      post: "/account/create"
+      body: "*"
+    };
+  }
+
+  // Fetch a new access token.
+  rpc RefreshAuth (RefreshAuthRequest) returns (RefreshAuthResponse) {
+    option (google.api.http) = {
+      post: "/auth/refresh"
+      body: "*"
+    };
+  }
+
+  // Get the information of the user with the given username or user id.
+  // If the user is the logged in user, the private user information is
+  // included.
+  rpc GetUser (GetUserRequest) returns (GetUserResponse) {
+    option (google.api.http) = {
+      get: "/user"
+    };
+  }
+}
+
+message LoginUserRequest {
+  // An identifier for the user.
+  oneof user_identifier {
+    // The username of the user.
+    string username = 1;
+    // The id of the user.
+    string user_id = 2;
+  }
+  // The hashed password of the user.
+  string password = 3;
+}
+
+message LoginUserResponse {
+  // Represents the relevant information for the two-factor authentication
+  // process to continue.
+  message TwoFactorInfo {
+    // The token used to identify the user through the verification process.
+    VerificationToken verification_token = 1;
+    // The options available for two-factor authentication.
+    repeated TwoFactor options = 2;
+  }
+  // A response, with the type dependent on whether two-factor authentication
+  // is enabled.
+  oneof response_type {
+    // The two-factor authentication information if two-factor authentication
+    // is enabled.
+    TwoFactorInfo two_factor = 1;
+    // The user's authentication and information if two-factor authentication
+    // is disabled.
+    SuccessfulLoginMessage response = 2;
+  }
+}
+
+message SendVerificationRequest {
+  // The token used to identify the user through the verification process.
+  VerificationToken verification_token = 1;
+  // The two-factor authentication option used.
+  TwoFactor option = 2;
+}
+
+message SendVerificationResponse {
+  // Whether or not sending the verification code was successful.
+  bool success = 1;
+  // The two-factor authentication option used.
+  TwoFactor destination = 2;
+}
+
+message VerifyUserRequest {
+  // The token used to identify the user through the verification process.
+  VerificationToken verification_token = 1;
+  // The two-factor authentication option used.
+  TwoFactor destination = 2;
+  // The two-factor authentication code received on the specified destination.
+  string code = 3;
+}
+
+message VerifyUserResponse {
+  // The user's authentication and information.
+  SuccessfulLoginMessage response = 1;
+}
+
+message UpdatePasswordRequest {
+  // The access token to identify and authenticate the user.
+  AccessToken access_token = 1;
+  // The old hashed password of the user.
+  string old_password = 2;
+  // The new hashed password of the user.
+  string new_password = 3;
+  // The salt used in the new hashed password.
+  string new_salt = 4;
+  // The hashing algorithm used to hash the user's new password.
+  HashAlgorithm password_hash_algorithm = 5;
+  // The user's private key, re-encrypted with the user's new password.
+  string private_key = 6;
+  // The encryption algorithm used to encrypt the user's private key.
+  SEncryptionAlgorithm private_key_encryption_algorithm = 7;
+}
+
+message UpdatePasswordResponse {
+  // The user's information.
+  User user = 1;
+}
+
+message CreateAccountRequest {
+  // The username of the user.
+  string username = 1;
+  // The hashed password of the user.
+  string password = 2;
+  // The salt used in the new hashed password.
+  string salt = 3;
+  // The hashing algorithm used to hash the user's password.
+  HashAlgorithm password_hash_algorithm = 4;
+  // The user's public key.
+  string public_key = 5;
+  // The user's private key, encrypted using the user's password.
+  string private_key = 6;
+  // The encryption algorithm used to encrypt the user's data.
+  string data_encryption_algorithm = 7;
+  // The encryption algorithm used to encrypt the user's private key.
+  string private_key_encryption_algorithm = 8;
+}
+
+message CreateAccountResponse {
+  // The user's authentication and information.
+  SuccessfulLoginMessage response = 1;
+}
+
+message RefreshAuthRequest {
+  // The refresh token to identify and authenticate the user.
+  RefreshToken refresh_token = 1;
+}
+
+message RefreshAuthResponse {
+  // The access token to identify and authenticate the user.
+  AccessToken access_token = 1;
+}
+
+message GetUserRequest {
+  // The access token to identify and authenticate the user.
+  AccessToken access_token = 1;
+  // An identifier of the user to retrieve.
+  oneof user_identifier {
+    // The username of the user.
+    string username = 2;
+    // The id of the user.
+    string user_id = 3;
+  }
+}
+
+message GetUserResponse {
+  // The information of the specified user.
+  User user = 1;
+}
