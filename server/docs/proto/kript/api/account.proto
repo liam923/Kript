@@ -88,7 +88,7 @@ service AccountService {
   // login process.
   rpc LoginUser (LoginUserRequest) returns (LoginUserResponse) {
     option (google.api.http) = {
-      post: "/account/login"
+      post: "/auth/login"
       body: "*"
     };
   }
@@ -96,7 +96,7 @@ service AccountService {
   // Send a verification code to the user using the specified method.
   rpc SendVerification (SendVerificationRequest) returns (SendVerificationResponse) {
     option (google.api.http) = {
-      post: "/account/verify/send"
+      post: "/auth/verify/send"
       body: "*"
     };
   }
@@ -104,7 +104,7 @@ service AccountService {
   // Complete logging in the user.
   rpc VerifyUser (VerifyUserRequest) returns (VerifyUserResponse) {
     option (google.api.http) = {
-      post: "/account/verify"
+      post: "/auth/verify"
       body: "*"
     };
   }
@@ -128,7 +128,7 @@ service AccountService {
   // Fetch a new access token.
   rpc RefreshAuth (RefreshAuthRequest) returns (RefreshAuthResponse) {
     option (google.api.http) = {
-      post: "/account/refresh"
+      post: "/auth/refresh"
       body: "*"
     };
   }

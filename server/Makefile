@@ -15,8 +15,8 @@ generate:
 
 	# Copy proto files and add go_package to them.
 	cp -r ../proto docs
-	for proto in $$(find ./docs/proto -type f -name "*.proto"); do \
-  		export package=$$(echo "$$proto" | sed -E 's#\./docs/(.*)/[^/]+\.proto#github.com/liam923/Kript/server/pkg/\1#'); \
+	for proto in $$(find docs/proto -type f -name "*.proto"); do \
+  		export package=$$(echo "$$proto" | sed -E 's#\docs/(.*)/[^/]+\.proto#github.com/liam923/Kript/server/pkg/\1#'); \
   		sed -i.bak -E "s#(package .+;)#\1 option go_package = \"$${package}\";#" $$proto; \
   		rm "$$proto".bak; \
   	done
@@ -43,3 +43,12 @@ Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api:\
 rm pkg/proto/kript/api/*.pb.gw.go.bak
 
 	go generate ./...
+
+build:
+	mkdir -p bin
+	for main in $$(find cmd -type f -name "main.go"); do \
+  		echo $$main; \
+  		export out=$$(echo "$$main" | sed -E "s#cmd/(.*)/main.go#bin/\1#"); \
+  		echo $$out; \
+		go build -o "$$out" "$$main"; \
+	done

@@ -601,17 +601,17 @@ func RegisterAccountServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 }
 
 var (
-	pattern_AccountService_LoginUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"account", "login"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AccountService_LoginUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"auth", "login"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_AccountService_SendVerification_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"account", "verify", "send"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AccountService_SendVerification_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"auth", "verify", "send"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_AccountService_VerifyUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"account", "verify"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AccountService_VerifyUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"auth", "verify"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_AccountService_UpdatePassword_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"account", "change-password"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_AccountService_CreateAccount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"account", "create"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_AccountService_RefreshAuth_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"account", "refresh"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AccountService_RefreshAuth_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"auth", "refresh"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_AccountService_GetUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"user"}, "", runtime.AssumeColonVerbOpt(true)))
 )
