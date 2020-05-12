@@ -4,14 +4,12 @@ github.com/ghodss/yaml
 github.com/gogo/gateway
 # github.com/gogo/googleapis v1.2.0
 github.com/gogo/googleapis/google/api
-github.com/gogo/googleapis/google/rpc
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/protoc-gen-gogo
+github.com/gogo/protobuf/proto
+github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 github.com/gogo/protobuf/vanity/command
 github.com/gogo/protobuf/jsonpb
-github.com/gogo/protobuf/proto
-github.com/gogo/protobuf/types
-github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 github.com/gogo/protobuf/plugin/compare
 github.com/gogo/protobuf/plugin/defaultcheck
 github.com/gogo/protobuf/plugin/description
@@ -31,16 +29,16 @@ github.com/gogo/protobuf/plugin/unmarshal
 github.com/gogo/protobuf/protoc-gen-gogo/generator
 github.com/gogo/protobuf/protoc-gen-gogo/grpc
 github.com/gogo/protobuf/protoc-gen-gogo/plugin
-github.com/gogo/protobuf/sortkeys
+github.com/gogo/protobuf/types
 github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/vanity
 github.com/gogo/protobuf/protoc-gen-gogo/generator/internal/remap
+github.com/gogo/protobuf/sortkeys
 # github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 github.com/golang/glog
 # github.com/golang/mock v1.4.3
 github.com/golang/mock/mockgen
 github.com/golang/mock/mockgen/model
-github.com/golang/mock/gomock
 # github.com/golang/protobuf v1.3.2
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/plugin

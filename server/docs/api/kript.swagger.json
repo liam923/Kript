@@ -16,7 +16,6 @@
   "paths": {
     "/account/change-password": {
       "post": {
-        "summary": "Change the user's password.",
         "operationId": "AccountService_UpdatePassword",
         "responses": {
           "200": {
@@ -49,7 +48,6 @@
     },
     "/account/create": {
       "post": {
-        "summary": "Create an account.",
         "operationId": "AccountService_CreateAccount",
         "responses": {
           "200": {
@@ -82,7 +80,6 @@
     },
     "/auth/login": {
       "post": {
-        "summary": "Login the user. If the user has 2-factor authentication enabled,\na verification code must be sent with SendVerification to complete the\nlogin process.",
         "operationId": "AccountService_LoginUser",
         "responses": {
           "200": {
@@ -115,7 +112,6 @@
     },
     "/auth/refresh": {
       "post": {
-        "summary": "Fetch a new access token.",
         "operationId": "AccountService_RefreshAuth",
         "responses": {
           "200": {
@@ -148,7 +144,6 @@
     },
     "/auth/verify": {
       "post": {
-        "summary": "Complete logging in the user.",
         "operationId": "AccountService_VerifyUser",
         "responses": {
           "200": {
@@ -181,7 +176,6 @@
     },
     "/auth/verify/send": {
       "post": {
-        "summary": "Send a verification code to the user using the specified method.",
         "operationId": "AccountService_SendVerification",
         "responses": {
           "200": {
@@ -212,9 +206,164 @@
         ]
       }
     },
+    "/data": {
+      "get": {
+        "operationId": "DataService_GetData",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetDataResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "datum_ids",
+            "description": "The list of ids of datums to retrieve. If empty, all datums that the user\nhas access to will be retrieved.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "DataService"
+        ]
+      },
+      "delete": {
+        "operationId": "DataService_DeleteDatum",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiDeleteDatumResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "The id of the datum to delete.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DataService"
+        ]
+      },
+      "post": {
+        "operationId": "DataService_CreateDatum",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiCreateDatumResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiCreateDatumRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataService"
+        ]
+      },
+      "patch": {
+        "operationId": "DataService_UpdateDatum",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiUpdateDatumResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUpdateDatumRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataService"
+        ]
+      }
+    },
+    "/data/share": {
+      "post": {
+        "operationId": "DataService_ShareDatum",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiShareDatumResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiShareDatumRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataService"
+        ]
+      }
+    },
     "/user": {
       "get": {
-        "summary": "Get the information of the user with the given username or user id.\nIf the user is the logged in user, the private user information is\nincluded.",
         "operationId": "AccountService_GetUser",
         "responses": {
           "200": {
@@ -253,6 +402,73 @@
     }
   },
   "definitions": {
+    "AccessMetadataPermissionGrantMetadata": {
+      "type": "object",
+      "properties": {
+        "granter_id": {
+          "type": "string",
+          "description": "The id of the user who granted or revoked a permission."
+        },
+        "permission": {
+          "$ref": "#/definitions/apiPermission",
+          "description": "The permission that was granted or revoked."
+        },
+        "is_grant": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "If true, this grant was a grant. Otherwise, it was a revoke."
+        }
+      },
+      "description": "Metadata associated with a change in access permissions."
+    },
+    "DatumAccess": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "description": "The id of the user whom this access object is associated with."
+        },
+        "data_key": {
+          "type": "string",
+          "description": "The key used to encrypt the actual data, encrypted using this user's\npublic key and decrypted with their private key."
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiPermission"
+          },
+          "description": "The list of permissions this user has on this datum."
+        }
+      },
+      "description": "An object representing relevant data to a user who has access to this\ndatum."
+    },
+    "DatumMetadata": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "string",
+          "description": "The user who created and owns this datum."
+        },
+        "created_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The time at which this datum was created."
+        },
+        "last_edited": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The time at which this datum was last modified."
+        },
+        "access_metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/MetadataAccessMetadata"
+          },
+          "description": "A map of id of users with access or who once had access to metadata\nassociated with that access."
+        }
+      },
+      "description": "The metadata associated with this datum."
+    },
     "LoginUserResponseTwoFactorInfo": {
       "type": "object",
       "properties": {
@@ -269,6 +485,19 @@
         }
       },
       "description": "Represents the relevant information for the two-factor authentication\nprocess to continue."
+    },
+    "MetadataAccessMetadata": {
+      "type": "object",
+      "properties": {
+        "grant_metadata": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AccessMetadataPermissionGrantMetadata"
+          },
+          "description": "The grants and revokes that have been given to the user."
+        }
+      },
+      "description": "Metadata associated with a user who had access to this datum at some\npoint."
     },
     "TwoFactorTwoFactorType": {
       "type": "string",
@@ -337,6 +566,101 @@
         }
       }
     },
+    "apiCreateDatumRequest": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "$ref": "#/definitions/apiAccessToken",
+          "description": "The access token to identify and authenticate the user."
+        },
+        "title": {
+          "type": "string",
+          "title": "The title of the datum. (Optional)"
+        },
+        "data": {
+          "type": "string",
+          "description": "The actual data of the datum, such as a password or code, encrypted.\nThis should decrypt to a string of a json object."
+        },
+        "data_key": {
+          "type": "string",
+          "description": "The key used to encrypt the actual data, encrypted using the owner's\npublic key and decrypted with their private key."
+        },
+        "data_encryption_algorithm": {
+          "$ref": "#/definitions/apiSEncryptionAlgorithm",
+          "description": "The encryption algorithm used to encrypt the actual data."
+        }
+      }
+    },
+    "apiCreateDatumResponse": {
+      "type": "object",
+      "properties": {
+        "datum": {
+          "$ref": "#/definitions/apiDatum",
+          "description": "The created datum."
+        }
+      }
+    },
+    "apiDatum": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The identifier of this datum."
+        },
+        "owner": {
+          "type": "string",
+          "description": "The owner of this datum."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of this datum, given by the user."
+        },
+        "data": {
+          "type": "string",
+          "description": "The actual data of this datum, such as a password or code, encrypted.\nThis should decrypt to a string of a json object."
+        },
+        "data_key": {
+          "type": "string",
+          "description": "The key used to encrypt the actual data, encrypted using the owner's\npublic key and decrypted with their private key."
+        },
+        "data_encryption_algorithm": {
+          "$ref": "#/definitions/apiSEncryptionAlgorithm",
+          "description": "The encryption algorithm used to encrypt the actual data."
+        },
+        "accessors": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/DatumAccess"
+          },
+          "description": "A map of ids of users who have access to this datum to information on what\npermissions they have."
+        },
+        "metadata": {
+          "$ref": "#/definitions/DatumMetadata",
+          "description": "The metadata associated with this datum."
+        }
+      }
+    },
+    "apiDeleteDatumResponse": {
+      "type": "object",
+      "properties": {
+        "datum": {
+          "$ref": "#/definitions/apiDatum",
+          "description": "The deleted datum, as it was before deletion."
+        }
+      }
+    },
+    "apiGetDataResponse": {
+      "type": "object",
+      "properties": {
+        "datums": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiDatum"
+          },
+          "description": "The datums requested by the user."
+        }
+      }
+    },
     "apiGetUserResponse": {
       "type": "object",
       "properties": {
@@ -383,6 +707,17 @@
           "description": "The user's authentication and information if two-factor authentication\nis disabled."
         }
       }
+    },
+    "apiPermission": {
+      "type": "string",
+      "enum": [
+        "READ",
+        "WRITE",
+        "DELETE",
+        "SHARE"
+      ],
+      "default": "READ",
+      "description": "A permission that a user can have on a datum.\n\n - READ: Permission to read the datum.\n - WRITE: Permission to write the datum.\n - DELETE: Permission to delete the datum.\n - SHARE: Permission to share the datum with other users. The user has the power\nto share the same permissions that they have."
     },
     "apiPrivateUser": {
       "type": "object",
@@ -484,6 +819,43 @@
         }
       }
     },
+    "apiShareDatumRequest": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "$ref": "#/definitions/apiAccessToken",
+          "description": "The access token to identify and authenticate the user."
+        },
+        "id": {
+          "type": "string",
+          "description": "The id of the datum to share."
+        },
+        "target_id": {
+          "type": "string",
+          "description": "The id of the user the datum should be shared with."
+        },
+        "data": {
+          "type": "string",
+          "description": "The actual data of the datum, such as a password or code, encrypted with\nthe target user's public key."
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiPermission"
+          },
+          "description": "The permissions to be granted to this user. These are in addition to any\npermissions the user already has."
+        }
+      }
+    },
+    "apiShareDatumResponse": {
+      "type": "object",
+      "properties": {
+        "datum": {
+          "$ref": "#/definitions/apiDatum",
+          "description": "The shared datum."
+        }
+      }
+    },
     "apiSuccessfulLoginMessage": {
       "type": "object",
       "properties": {
@@ -514,6 +886,36 @@
         }
       },
       "description": "A way to send/receive a two-factor authentication code."
+    },
+    "apiUpdateDatumRequest": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "$ref": "#/definitions/apiAccessToken",
+          "description": "The access token to identify and authenticate the user."
+        },
+        "id": {
+          "type": "string",
+          "description": "The id of the datum to update."
+        },
+        "title": {
+          "type": "string",
+          "title": "The new title of the. (Optional)"
+        },
+        "data": {
+          "type": "string",
+          "title": "The new actual data of the datum, such as a password or code, encrypted.\nThis should decrypt to a string of a json object. (Optional)"
+        }
+      }
+    },
+    "apiUpdateDatumResponse": {
+      "type": "object",
+      "properties": {
+        "datum": {
+          "$ref": "#/definitions/apiDatum",
+          "description": "The updated datum."
+        }
+      }
     },
     "apiUpdatePasswordRequest": {
       "type": "object",

@@ -1,5 +1,5 @@
 syntax="proto3";
-package kript.api;
+package kript.api; option go_package = "github.com/liam923/Kript/server/pkg/proto/kript/api";
 
 import "kript/api/universal.proto";
 import "google/api/annotations.proto";
