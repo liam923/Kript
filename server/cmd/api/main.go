@@ -20,8 +20,11 @@ import (
 )
 
 var (
-	gRPCPort    = flag.Int("grpc-port", 10000, "The gRPC server port")
-	gatewayPort = flag.Int("rest-port", 11000, "The rest server port")
+	gRPCPort          = flag.Int("grpc-port", 10000, "The gRPC server port")
+	gatewayPort       = flag.Int("rest-port", 11000, "The rest server port")
+	projectId         = flag.String("project-id", "", "The Google Cloud project id")
+	privateJwtKeyPath = flag.String("private-jwt", "", "The path to the private key used to sign jwt keys")
+	publicJwtKeyPath  = flag.String("public-jwt", "", "The path to the public key used to sign jwt keys")
 )
 
 var log grpclog.LoggerV2
@@ -38,15 +41,29 @@ func main() {
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalln("Failed to listen:", err)
+		return
 	}
 	s := grpc.NewServer()
 	api.RegisterDataServiceServer(s, &data.Server{})
-	api.RegisterAccountServiceServer(s, &account.Server{})
+
+	privateKey, publicKey, err := jwtKeys()
+	if err != nil {
+		log.Fatalln("Failed to read jwt keys:", err)
+		return
+	}
+
+	accountServer, err := account.NewServer(*projectId, &log, privateKey, publicKey)
+	if err != nil {
+		log.Fatalln("Failed to create account database client:", err)
+		return
+	}
+	api.RegisterAccountServiceServer(s, accountServer)
 
 	// Serve gRPC Server
 	log.Info("Serving gRPC on http://", addr)
 	go func() {
 		log.Fatal(s.Serve(lis))
+		return
 	}()
 
 	dialAddr := fmt.Sprintf("passthrough://localhost/%s", addr)
@@ -58,6 +75,7 @@ func main() {
 	)
 	if err != nil {
 		log.Fatalln("Failed to dial server:", err)
+		return
 	}
 
 	mux := http.NewServeMux()
@@ -76,10 +94,12 @@ func main() {
 	err = api.RegisterDataServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		log.Fatalln("Failed to register gateway:", err)
+		return
 	}
 	err = api.RegisterAccountServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		log.Fatalln("Failed to register gateway:", err)
+		return
 	}
 
 	mux.Handle("/", gwmux)
@@ -87,8 +107,22 @@ func main() {
 	gatewayAddr := fmt.Sprintf("localhost:%d", *gatewayPort)
 	log.Info("Serving gRPC-Gateway on ", gatewayAddr)
 	gwServer := http.Server{
-		Addr: gatewayAddr,
+		Addr:    gatewayAddr,
 		Handler: mux,
 	}
 	log.Fatalln(gwServer.ListenAndServe())
+}
+
+func jwtKeys() (private []byte, public []byte, err error) {
+	publicBytes, err := ioutil.ReadFile(*publicJwtKeyPath)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	privateBytes, err := ioutil.ReadFile(*privateJwtKeyPath)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return privateBytes, publicBytes, nil
 }

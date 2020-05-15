@@ -37,7 +37,7 @@ message PrivateUser {
   // The user's private key, encrypted with the user's password.
   string private_key = 1;
   // The encryption algorithm used to encrypt the private key.
-  SEncryptionAlgorithm private_key_ncryption_algorithm = 2;
+  SEncryptionAlgorithm private_key_encryption_algorithm = 2;
 }
 
 // The public and private information about a user.
@@ -49,18 +49,20 @@ message User {
 }
 
 message VerificationToken {
-
+  JWT jwt = 1;
 }
 
 message RefreshToken {
-
+  JWT jwt = 1;
 }
 
 message SuccessfulLoginMessage {
   // The refresh token to identify and authenticate the user.
   RefreshToken refresh_token = 1;
+  // The access token to identify and authenticate the user.
+  AccessToken access_token = 2;
   // The user's information.
-  User user = 2;
+  User user = 3;
 }
 
 // A way to send/receive a two-factor authentication code.

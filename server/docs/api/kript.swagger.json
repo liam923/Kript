@@ -225,6 +225,13 @@
         },
         "parameters": [
           {
+            "name": "access_token.jwt.token",
+            "description": "The Base 64 encoded JWT.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
             "name": "datum_ids",
             "description": "The list of ids of datums to retrieve. If empty, all datums that the user\nhas access to will be retrieved.",
             "in": "query",
@@ -257,6 +264,13 @@
           }
         },
         "parameters": [
+          {
+            "name": "access_token.jwt.token",
+            "description": "The Base 64 encoded JWT.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
           {
             "name": "id",
             "description": "The id of the datum to delete.",
@@ -380,6 +394,13 @@
           }
         },
         "parameters": [
+          {
+            "name": "access_token.jwt.token",
+            "description": "The Base 64 encoded JWT.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
           {
             "name": "username",
             "description": "The username of the user.",
@@ -518,7 +539,12 @@
       "description": "An enumeration of different asymmetric encryption algorithms.\n\n - RSA: Encrypt using AES with a given key."
     },
     "apiAccessToken": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "jwt": {
+          "$ref": "#/definitions/apiJWT"
+        }
+      }
     },
     "apiCreateAccountRequest": {
       "type": "object",
@@ -678,6 +704,16 @@
       "default": "SHA_512",
       "description": "An enumeration of different password hashing algorithms.\n\n - SHA_512: Concatenate password + salt and use SHA-512."
     },
+    "apiJWT": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "The Base 64 encoded JWT."
+        }
+      },
+      "description": "A representation of a JSON Web Token."
+    },
     "apiLoginUserRequest": {
       "type": "object",
       "properties": {
@@ -726,7 +762,7 @@
           "type": "string",
           "description": "The user's private key, encrypted with the user's password."
         },
-        "private_key_ncryption_algorithm": {
+        "private_key_encryption_algorithm": {
           "$ref": "#/definitions/apiSEncryptionAlgorithm",
           "description": "The encryption algorithm used to encrypt the private key."
         }
@@ -782,7 +818,12 @@
       }
     },
     "apiRefreshToken": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "jwt": {
+          "$ref": "#/definitions/apiJWT"
+        }
+      }
     },
     "apiSEncryptionAlgorithm": {
       "type": "string",
@@ -862,6 +903,10 @@
         "refresh_token": {
           "$ref": "#/definitions/apiRefreshToken",
           "description": "The refresh token to identify and authenticate the user."
+        },
+        "access_token": {
+          "$ref": "#/definitions/apiAccessToken",
+          "description": "The access token to identify and authenticate the user."
         },
         "user": {
           "$ref": "#/definitions/apiUser",
@@ -974,7 +1019,12 @@
       "description": "The public and private information about a user."
     },
     "apiVerificationToken": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "jwt": {
+          "$ref": "#/definitions/apiJWT"
+        }
+      }
     },
     "apiVerifyUserRequest": {
       "type": "object",

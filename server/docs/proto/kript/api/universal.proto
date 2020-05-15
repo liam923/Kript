@@ -20,5 +20,11 @@ enum AEncryptionAlgorithm {
 }
 
 message AccessToken {
+  JWT jwt = 1;
+}
 
+// A representation of a JSON Web Token.
+message JWT {
+  // The Base 64 encoded JWT.
+  string token = 1;
 }
