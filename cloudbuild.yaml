@@ -1,0 +1,39 @@
+steps:
+  # Create a copy of the repo, so that steps can get their own fresh copy if
+  # necessary.
+  - name: ubuntu
+    id: 'sandbox'
+    volumes:
+    - name: 'sandbox'
+      path: '/sandbox'
+    args: ['bash', '-c', 'mkdir -p "/sandbox" && cp -r . "/sandbox/repo"']
+
+  - name: golang:1.14
+    id: 'server.validate'
+    volumes:
+    - name: 'sandbox'
+      path: '/sandbox'
+    args: ['server/scripts/validate', '/sandbox/validate', '/sandbox/repo']
+    waitFor: ['sandbox']
+
+  - name: golang:1.14
+    id: 'server.lint'
+    volumes:
+    - name: 'sandbox'
+      path: '/sandbox'
+    args: ['server/scripts/lint', '/sandbox/lint', '/sandbox/repo']
+    waitFor: ['sandbox']
+
+  - name: golang:1.14
+    id: 'server.test'
+    args: ['make', 'test']
+    dir: 'server'
+    waitFor: ['sandbox']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'server.build.api'
+    args: ['build', '-f', 'Dockerfile.api', '-t', 'gcr.io/${PROJECT_ID}/server-api:${SHORT_SHA}', '.']
+    dir: 'server'
+    waitFor: ['sandbox']
+
+images: ['gcr.io/${PROJECT_ID}/server-api:${SHORT_SHA}']

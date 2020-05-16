@@ -44,6 +44,9 @@ rm pkg/proto/kript/api/*.pb.gw.go.bak
 
 	go generate ./...
 
+test:
+	go test ./...
+
 build:
 	mkdir -p bin
 	for main in $$(find cmd -type f -name "main.go"); do \

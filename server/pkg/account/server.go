@@ -35,9 +35,9 @@ func NewServer(projectId string, logger *grpclog.LoggerV2, privateKey []byte, pu
 		return nil, err
 	}
 	return &Server{
-		db:     client.Collection("account"),
-		logger: logger,
-		signer: signer,
+		db:        client.Collection("account"),
+		logger:    logger,
+		signer:    signer,
 		validator: validator,
 	}, nil
 }

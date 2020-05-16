@@ -6,7 +6,6 @@ import (
 )
 
 type Server struct {
-
 }
 
 func (s *Server) GetData(context.Context, *api.GetDataRequest) (*api.GetDataResponse, error) {
@@ -28,5 +27,3 @@ func (s *Server) DeleteDatum(context.Context, *api.DeleteDatumRequest) (*api.Del
 func (s *Server) ShareDatum(context.Context, *api.ShareDatumRequest) (*api.ShareDatumResponse, error) {
 	panic("implement me")
 }
-
-

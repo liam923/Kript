@@ -1,6 +1,6 @@
 module github.com/liam923/Kript/server
 
-go 1.12
+go 1.14
 
 require (
 	cloud.google.com/go/firestore v1.2.0

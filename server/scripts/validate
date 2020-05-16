@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -e
+
+# The puspose of this script is to validate for the build phase that all files and dependency have been properly
+# generated and installed.
+
+CREPO="$1"
+REPO="$2"
+
+# Install protoc
+# TODO: Create a docker container to speed this step up
+apt-get update
+apt-get -y install autoconf automake libtool curl make g++ unzip
+PROTOC_ZIP=protoc-3.7.1-linux-x86_64.zip
+curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/$PROTOC_ZIP
+unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
+unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
+rm -f $PROTOC_ZIP
+
+# Regenerate files and compare to the copied files
+cp -r "$REPO" "$CREPO"
+cd "$CREPO/server"
+scripts/degenerate
+make -s install
+make -s vendor
+make -s generate
+DIFF="$(diff -r "$CREPO/server" "$REPO/server")"
+printf "%s" "$DIFF"
+if [[ "$DIFF" ]]; then
+  exit 1
+else
+  exit 0
+fi
