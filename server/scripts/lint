@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -e
+
+# The puspose of this script is to check that all code has been properly linted.
+
+CREPO="$1"
+REPO="$2"
+
+# Regenerate files and compare to the copied files
+cp -r "$REPO" "$CREPO"
+cd "$CREPO/server"
+REFORMATTED="$(go fmt ./...)"
+printf "%s" "$REFORMATTED"
+if [[ "$REFORMATTED" ]]; then
+  exit 1
+else
+  exit 0
+fi

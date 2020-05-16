@@ -33,7 +33,7 @@ func TestSignAndValidate(t *testing.T) {
 	tests := []test{
 		// Successful sign and validate
 		{
-			testName: "valid 1",
+			testName:        "valid 1",
 			keys:            generateKeys(t, 1000),
 			signerIssuer:    "kript.api",
 			validatorIssuer: "kript.api",
@@ -45,7 +45,7 @@ func TestSignAndValidate(t *testing.T) {
 			validJWT:        true,
 		},
 		{
-			testName: "valid 2",
+			testName:        "valid 2",
 			keys:            generateKeys(t, 1024),
 			signerIssuer:    "issuer",
 			validatorIssuer: "issuer",
@@ -57,7 +57,7 @@ func TestSignAndValidate(t *testing.T) {
 			validJWT:        true,
 		},
 		{
-			testName: "valid 3",
+			testName:        "valid 3",
 			keys:            generateKeys(t, 2312),
 			signerIssuer:    "reuonewrci",
 			validatorIssuer: "reuonewrci",
@@ -69,7 +69,7 @@ func TestSignAndValidate(t *testing.T) {
 			validJWT:        true,
 		},
 		{
-			testName: "valid 4",
+			testName:        "valid 4",
 			keys:            generateKeys(t, 4096),
 			signerIssuer:    "eiownx43nx9re0jx9",
 			validatorIssuer: "eiownx43nx9re0jx9",
@@ -82,37 +82,37 @@ func TestSignAndValidate(t *testing.T) {
 		},
 		// Invalid public or private key
 		{
-			testName: "invalid key 1",
+			testName:        "invalid key 1",
 			keys:            keyPair{nil, nil},
 			validPublicKey:  false,
 			validPrivateKey: false,
 		},
 		{
-			testName: "invalid key 2",
+			testName:        "invalid key 2",
 			keys:            keyPair{generateKeys(t, 512).public, nil},
 			validPublicKey:  true,
 			validPrivateKey: false,
 		},
 		{
-			testName: "invalid key 3",
+			testName:        "invalid key 3",
 			keys:            keyPair{nil, generateKeys(t, 512).private},
 			validPublicKey:  false,
 			validPrivateKey: true,
 		},
 		{
-			testName: "invalid key 4",
+			testName:        "invalid key 4",
 			keys:            keyPair{generateKeys(t, 4096).public, nil},
 			validPublicKey:  true,
 			validPrivateKey: false,
 		},
 		{
-			testName: "invalid key 5",
+			testName:        "invalid key 5",
 			keys:            keyPair{nil, generateKeys(t, 4096).private},
 			validPublicKey:  false,
 			validPrivateKey: true,
 		},
 		{
-			testName: "invalid key 6",
+			testName:        "invalid key 6",
 			keys:            keyPair{randomBytes(t, 1000), randomBytes(t, 1000)},
 			validPublicKey:  false,
 			validPrivateKey: false,
@@ -128,7 +128,7 @@ func TestSignAndValidate(t *testing.T) {
 		},
 		// Invalid signing (non-corresponding keys)
 		{
-			testName: "invalid key pair 1",
+			testName:        "invalid key pair 1",
 			keys:            keyPair{generateKeys(t, 2048).public, generateKeys(t, 2048).private},
 			signerIssuer:    "kript.api",
 			validatorIssuer: "kript.api",
@@ -140,7 +140,7 @@ func TestSignAndValidate(t *testing.T) {
 			validJWT:        false,
 		},
 		{
-			testName: "invalid key pair 2",
+			testName:        "invalid key pair 2",
 			keys:            keyPair{generateKeys(t, 1024).public, generateKeys(t, 1024).private},
 			signerIssuer:    "issuer",
 			validatorIssuer: "issuer",
@@ -152,7 +152,7 @@ func TestSignAndValidate(t *testing.T) {
 			validJWT:        false,
 		},
 		{
-			testName: "invalid key pair 3",
+			testName:        "invalid key pair 3",
 			keys:            keyPair{generateKeys(t, 2312).public, generateKeys(t, 2312).private},
 			signerIssuer:    "reuonewrci",
 			validatorIssuer: "reuonewrci",
@@ -164,7 +164,7 @@ func TestSignAndValidate(t *testing.T) {
 			validJWT:        false,
 		},
 		{
-			testName: "invalid key pair 4",
+			testName:        "invalid key pair 4",
 			keys:            keyPair{generateKeys(t, 4096).public, generateKeys(t, 4096).private},
 			signerIssuer:    "eiownx43nx9re0jx9",
 			validatorIssuer: "eiownx43nx9re0jx9",
@@ -177,7 +177,7 @@ func TestSignAndValidate(t *testing.T) {
 		},
 		// Wrong issuer (issuers don't match)
 		{
-			testName: "invalid issuer",
+			testName:        "invalid issuer",
 			keys:            generateKeys(t, 4096),
 			signerIssuer:    "kript.api",
 			validatorIssuer: "kript.ipa",
@@ -190,19 +190,19 @@ func TestSignAndValidate(t *testing.T) {
 		},
 		// Expired token
 		{
-			testName: "expired token 1",
+			testName:        "expired token 1",
 			keys:            generateKeys(t, 4096),
 			signerIssuer:    "kript.api",
 			validatorIssuer: "kript.api",
 			userID:          "user123",
 			tokenType:       "access",
-			expireTime:      time.Now().Add(-time.Nanosecond),
+			expireTime:      time.Now().Add(-time.Microsecond),
 			validPublicKey:  true,
 			validPrivateKey: true,
 			validJWT:        false,
 		},
 		{
-			testName: "expired token 2",
+			testName:        "expired token 2",
 			keys:            generateKeys(t, 4096),
 			signerIssuer:    "kript.api",
 			validatorIssuer: "kript.api",
