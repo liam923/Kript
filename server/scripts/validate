@@ -21,9 +21,8 @@ rm -f $PROTOC_ZIP
 cp -r "$REPO" "$CREPO"
 cd "$CREPO/server"
 scripts/degenerate
-make -s install
-make -s vendor
-make -s generate
+make -s setup
+diff -r "$CREPO/server" "$REPO/server"
 DIFF="$(diff -r "$CREPO/server" "$REPO/server")"
 printf "%s" "$DIFF"
 if [[ "$DIFF" ]]; then

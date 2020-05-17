@@ -574,11 +574,11 @@
           "description": "The user's private key, encrypted using the user's password."
         },
         "data_encryption_algorithm": {
-          "type": "string",
+          "$ref": "#/definitions/apiAEncryptionAlgorithm",
           "description": "The encryption algorithm used to encrypt the user's data."
         },
         "private_key_encryption_algorithm": {
-          "type": "string",
+          "$ref": "#/definitions/apiSEncryptionAlgorithm",
           "description": "The encryption algorithm used to encrypt the user's private key."
         }
       }
@@ -981,7 +981,7 @@
           "type": "string",
           "description": "The salt used in the new hashed password."
         },
-        "password_hash_algorithm": {
+        "new_password_hash_algorithm": {
           "$ref": "#/definitions/apiHashAlgorithm",
           "description": "The hashing algorithm used to hash the user's new password."
         },

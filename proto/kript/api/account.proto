@@ -216,7 +216,7 @@ message UpdatePasswordRequest {
   // The salt used in the new hashed password.
   string new_salt = 4;
   // The hashing algorithm used to hash the user's new password.
-  HashAlgorithm password_hash_algorithm = 5;
+  HashAlgorithm new_password_hash_algorithm = 5;
   // The user's private key, re-encrypted with the user's new password.
   string private_key = 6;
   // The encryption algorithm used to encrypt the user's private key.
@@ -242,9 +242,9 @@ message CreateAccountRequest {
   // The user's private key, encrypted using the user's password.
   string private_key = 6;
   // The encryption algorithm used to encrypt the user's data.
-  string data_encryption_algorithm = 7;
+  AEncryptionAlgorithm data_encryption_algorithm = 7;
   // The encryption algorithm used to encrypt the user's private key.
-  string private_key_encryption_algorithm = 8;
+  SEncryptionAlgorithm private_key_encryption_algorithm = 8;
 }
 
 message CreateAccountResponse {

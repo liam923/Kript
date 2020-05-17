@@ -6,6 +6,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -17,15 +18,15 @@ type Signer struct {
 
 func NewSigner(privateKey []byte, issuerId string) (*Signer, error) {
 	if privateKey == nil {
-		return nil, fmt.Errorf("private key cannot be nil")
+		return nil, fmt.Errorf("private generate cannot be nil")
 	}
 	privateBlock, _ := pem.Decode(privateKey)
 	if privateBlock == nil {
-		return nil, fmt.Errorf("invalid private key")
+		return nil, fmt.Errorf("invalid private generate")
 	}
 	key, err := x509.ParsePKCS1PrivateKey(privateBlock.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("invalid private key")
+		return nil, fmt.Errorf("invalid private generate")
 	}
 	return &Signer{
 		privateKey: key,
@@ -34,11 +35,14 @@ func NewSigner(privateKey []byte, issuerId string) (*Signer, error) {
 }
 
 // Create and sign a JWT authenticating a user.
-func (s *Signer) CreateAndSignJWT(userId string, expires time.Time, tokenType string) (string, error) {
-	return jwt.NewWithClaims(jwt.SigningMethodRS512, jwt.StandardClaims{
+func (s *Signer) CreateAndSignJWT(userId string, expires time.Time, tokenType string) (token string, tokenId string, err error) {
+	tokenId = uuid.New().String()
+	token, err = jwt.NewWithClaims(jwt.SigningMethodRS512, jwt.StandardClaims{
 		Issuer:    s.issuerId,
 		Subject:   userId,
 		Audience:  tokenType,
 		ExpiresAt: expires.Unix(),
+		Id:        tokenId,
 	}).SignedString(s.privateKey)
+	return
 }
