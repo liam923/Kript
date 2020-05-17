@@ -23,8 +23,8 @@ var (
 	gRPCPort          = flag.Int("grpc-port", 10000, "The gRPC server port")
 	gatewayPort       = flag.Int("rest-port", 11000, "The rest server port")
 	projectId         = flag.String("project-id", "", "The Google Cloud project id")
-	privateJwtKeyPath = flag.String("private-jwt", "", "The path to the private key used to sign jwt keys")
-	publicJwtKeyPath  = flag.String("public-jwt", "", "The path to the public key used to sign jwt keys")
+	privateJwtKeyPath = flag.String("private-jwt", "", "The path to the private generate used to sign jwt keys")
+	publicJwtKeyPath  = flag.String("public-jwt", "", "The path to the public generate used to sign jwt keys")
 )
 
 var log grpclog.LoggerV2

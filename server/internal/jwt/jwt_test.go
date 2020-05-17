@@ -2,23 +2,16 @@ package jwt_test
 
 import (
 	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
 	"fmt"
+	"github.com/liam923/Kript/server/internal/generate"
 	"github.com/liam923/Kript/server/internal/jwt"
 	"testing"
 	"time"
 )
 
-type keyPair struct {
-	public  []byte
-	private []byte
-}
-
 type test struct {
 	testName        string
-	keys            keyPair
+	keys            generate.Pair
 	signerIssuer    string
 	validatorIssuer string
 	userID          string
@@ -30,18 +23,18 @@ type test struct {
 }
 
 func TestSignAndValidate(t *testing.T) {
-	keys := [][]keyPair{
+	keys := [][]generate.Pair{
 		{
-			generateKeys(t, 1000),
-			generateKeys(t, 1000),
+			generate.Keys(1000),
+			generate.Keys(1000),
 		},
 		{
-			generateKeys(t, 2048),
-			generateKeys(t, 2048),
+			generate.Keys(2048),
+			generate.Keys(2048),
 		},
 		{
-			generateKeys(t, 4096),
-			generateKeys(t, 4096),
+			generate.Keys(4096),
+			generate.Keys(4096),
 		},
 	}
 	tests := []test{
@@ -82,56 +75,56 @@ func TestSignAndValidate(t *testing.T) {
 			validPrivateKey: true,
 			validJWT:        true,
 		},
-		// Invalid public or private key
+		// Invalid public or private generate
 		{
-			testName:        "invalid key 1",
-			keys:            keyPair{nil, nil},
+			testName:        "invalid generate 1",
+			keys:            generate.Pair{nil, nil},
 			validPublicKey:  false,
 			validPrivateKey: false,
 		},
 		{
-			testName:        "invalid key 2",
-			keys:            keyPair{keys[0][0].public, nil},
+			testName:        "invalid generate 2",
+			keys:            generate.Pair{keys[0][0].Public, nil},
 			validPublicKey:  true,
 			validPrivateKey: false,
 		},
 		{
-			testName:        "invalid key 3",
-			keys:            keyPair{nil, keys[0][0].private},
+			testName:        "invalid generate 3",
+			keys:            generate.Pair{nil, keys[0][0].Private},
 			validPublicKey:  false,
 			validPrivateKey: true,
 		},
 		{
-			testName:        "invalid key 4",
-			keys:            keyPair{keys[2][0].public, nil},
+			testName:        "invalid generate 4",
+			keys:            generate.Pair{keys[2][0].Public, nil},
 			validPublicKey:  true,
 			validPrivateKey: false,
 		},
 		{
-			testName:        "invalid key 5",
-			keys:            keyPair{nil, keys[2][0].private},
+			testName:        "invalid generate 5",
+			keys:            generate.Pair{nil, keys[2][0].Private},
 			validPublicKey:  false,
 			validPrivateKey: true,
 		},
 		{
-			testName:        "invalid key 6",
-			keys:            keyPair{randomBytes(t, 1000), randomBytes(t, 1000)},
+			testName:        "invalid generate 6",
+			keys:            generate.Pair{randomBytes(t, 1000), randomBytes(t, 1000)},
 			validPublicKey:  false,
 			validPrivateKey: false,
 		},
 		{
-			testName: "invalid key 7",
-			keys: keyPair{
-				public:  randomBytes(t, len(keys[0][0].public)),
-				private: randomBytes(t, len(keys[0][0].private)),
+			testName: "invalid generate 7",
+			keys: generate.Pair{
+				Public:  randomBytes(t, len(keys[0][0].Public)),
+				Private: randomBytes(t, len(keys[0][0].Private)),
 			},
 			validPublicKey:  false,
 			validPrivateKey: false,
 		},
 		// Invalid signing (non-corresponding keys)
 		{
-			testName:        "invalid key pair 1",
-			keys:            keyPair{keys[0][0].public, keys[0][1].private},
+			testName:        "invalid generate pair 1",
+			keys:            generate.Pair{keys[0][0].Public, keys[0][1].Private},
 			signerIssuer:    "kript.api",
 			validatorIssuer: "kript.api",
 			userID:          "user123",
@@ -142,8 +135,8 @@ func TestSignAndValidate(t *testing.T) {
 			validJWT:        false,
 		},
 		{
-			testName:        "invalid key pair 2",
-			keys:            keyPair{keys[1][0].public, keys[1][1].private},
+			testName:        "invalid generate pair 2",
+			keys:            generate.Pair{keys[1][0].Public, keys[1][1].Private},
 			signerIssuer:    "issuer",
 			validatorIssuer: "issuer",
 			userID:          "other user",
@@ -154,8 +147,8 @@ func TestSignAndValidate(t *testing.T) {
 			validJWT:        false,
 		},
 		{
-			testName:        "invalid key pair 3",
-			keys:            keyPair{keys[2][0].public, keys[2][1].private},
+			testName:        "invalid generate pair 3",
+			keys:            generate.Pair{keys[2][0].Public, keys[2][1].Private},
 			signerIssuer:    "reuonewrci",
 			validatorIssuer: "reuonewrci",
 			userID:          "thisisauserid-1234567890",
@@ -207,29 +200,29 @@ func TestSignAndValidate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf(tt.testName), func(t *testing.T) {
-			signer, err := jwt.NewSigner(tt.keys.private, tt.signerIssuer)
+			signer, err := jwt.NewSigner(tt.keys.Private, tt.signerIssuer)
 			if tt.validPrivateKey && err != nil {
 				t.Fatal("Failed to instantiate Signer")
 				return
 			} else if err == nil && !tt.validPrivateKey {
-				t.Fatal("Signer initialization did not fail despite invalid key")
+				t.Fatal("Signer initialization did not fail despite invalid generate")
 				return
 			}
-			validator, err := jwt.NewValidator(tt.keys.public, tt.validatorIssuer)
+			validator, err := jwt.NewValidator(tt.keys.Public, tt.validatorIssuer)
 			if tt.validPublicKey && err != nil {
 				t.Fatal("Failed to instantiate Validator")
 				return
 			} else if err == nil && !tt.validPublicKey {
-				t.Fatal("Validator initialization did not fail despite invalid key")
+				t.Fatal("Validator initialization did not fail despite invalid generate")
 				return
 			}
 
 			if tt.validPrivateKey && tt.validPublicKey {
-				token, err := signer.CreateAndSignJWT(tt.userID, tt.expireTime, tt.tokenType)
+				token, signedTokenId, err := signer.CreateAndSignJWT(tt.userID, tt.expireTime, tt.tokenType)
 				if err != nil {
 					t.Fatalf("An unexpected error occurred during signing: %v", err)
 				}
-				userId, tokenType, err := validator.ValidateJWT(token)
+				userId, tokenType, validatedTokenId, err := validator.ValidateJWT(token)
 				if tt.validJWT {
 					if err != nil {
 						t.Fatalf("Failed to validate token that should be valid: %v", err)
@@ -239,6 +232,9 @@ func TestSignAndValidate(t *testing.T) {
 					}
 					if tokenType != tt.tokenType {
 						t.Fatalf("Validation returned incorrect token type")
+					}
+					if signedTokenId != validatedTokenId {
+						t.Fatalf("Token ids %s and %s did not match", signedTokenId, validatedTokenId)
 					}
 				} else {
 					if err == nil {
@@ -256,37 +252,4 @@ func randomBytes(t *testing.T, n int) []byte {
 		t.Errorf("Error generating random byte sequence of lenth %d", n)
 	}
 	return token
-}
-
-func generateKeys(t *testing.T, bitSize int) keyPair {
-	privateKey, err := rsa.GenerateKey(rand.Reader, bitSize)
-	if err != nil {
-		t.Errorf("Failed to generate test keys for bit size %d", bitSize)
-		return keyPair{}
-	}
-	publicKey := privateKey.Public()
-
-	private := pem.EncodeToMemory(
-		&pem.Block{
-			Type:  "RSA PRIVATE KEY",
-			Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
-		},
-	)
-
-	publicMarshalled, err := x509.MarshalPKIXPublicKey(publicKey)
-	if err != nil {
-		t.Errorf("Failed to generate test keys for bit size %d: %v", bitSize, err)
-		return keyPair{}
-	}
-	public := pem.EncodeToMemory(
-		&pem.Block{
-			Type:  "RSA PUBLIC KEY",
-			Bytes: publicMarshalled,
-		},
-	)
-
-	return keyPair{
-		public:  public,
-		private: private,
-	}
 }
