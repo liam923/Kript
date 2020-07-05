@@ -466,7 +466,7 @@
     "DatumMetadata": {
       "type": "object",
       "properties": {
-        "owner": {
+        "owner_id": {
           "type": "string",
           "description": "The user who created and owns this datum."
         },
@@ -533,9 +533,10 @@
     "apiAEncryptionAlgorithm": {
       "type": "string",
       "enum": [
+        "UNKNOWN_A_ENCRYPTION_ALGORITHM",
         "RSA"
       ],
-      "default": "RSA",
+      "default": "UNKNOWN_A_ENCRYPTION_ALGORITHM",
       "description": "An enumeration of different asymmetric encryption algorithms.\n\n - RSA: Encrypt using AES with a given key."
     },
     "apiAccessToken": {
@@ -645,10 +646,6 @@
           "type": "string",
           "description": "The actual data of this datum, such as a password or code, encrypted.\nThis should decrypt to a string of a json object."
         },
-        "data_key": {
-          "type": "string",
-          "description": "The key used to encrypt the actual data, encrypted using the owner's\npublic key and decrypted with their private key."
-        },
         "data_encryption_algorithm": {
           "$ref": "#/definitions/apiSEncryptionAlgorithm",
           "description": "The encryption algorithm used to encrypt the actual data."
@@ -658,7 +655,7 @@
           "additionalProperties": {
             "$ref": "#/definitions/DatumAccess"
           },
-          "description": "A map of ids of users who have access to this datum to information on what\npermissions they have."
+          "description": "A map of ids of users who have access to this datum to information on what\npermissions they have. This does not include the owner, who has all permissions."
         },
         "metadata": {
           "$ref": "#/definitions/DatumMetadata",
@@ -699,9 +696,10 @@
     "apiHashAlgorithm": {
       "type": "string",
       "enum": [
+        "UNKNOWN_HASH_ALGORITHM",
         "SHA_512"
       ],
-      "default": "SHA_512",
+      "default": "UNKNOWN_HASH_ALGORITHM",
       "description": "An enumeration of different password hashing algorithms.\n\n - SHA_512: Concatenate password + salt and use SHA-512."
     },
     "apiJWT": {
@@ -747,13 +745,15 @@
     "apiPermission": {
       "type": "string",
       "enum": [
+        "UNKNOWN",
         "READ",
         "WRITE",
         "DELETE",
-        "SHARE"
+        "SHARE",
+        "ADMIN"
       ],
-      "default": "READ",
-      "description": "A permission that a user can have on a datum.\n\n - READ: Permission to read the datum.\n - WRITE: Permission to write the datum.\n - DELETE: Permission to delete the datum.\n - SHARE: Permission to share the datum with other users. The user has the power\nto share the same permissions that they have."
+      "default": "UNKNOWN",
+      "description": "A permission that a user can have on a datum.\n\n - READ: Permission to read the datum.\n - WRITE: Permission to read and write the datum.\n - DELETE: Permission to read and delete the datum.\n - SHARE: Permission to read and share the datum with other users. The user has the power\nto share the same permissions that they have.\n - ADMIN: Full permission on the datum."
     },
     "apiPrivateUser": {
       "type": "object",
@@ -794,7 +794,7 @@
         },
         "data_encryption_algorithm": {
           "$ref": "#/definitions/apiAEncryptionAlgorithm",
-          "description": "The encryption algorithm used to encrypt the user's data."
+          "description": "The encryption algorithm used to encrypt the user's data keys."
         }
       },
       "description": "The public information about a user that is visible to anyone."
@@ -828,9 +828,10 @@
     "apiSEncryptionAlgorithm": {
       "type": "string",
       "enum": [
+        "UNKNOWN_S_ENCRYPTION_ALGORITHM",
         "AES"
       ],
-      "default": "AES",
+      "default": "UNKNOWN_S_ENCRYPTION_ALGORITHM",
       "description": "An enumeration of different symmetric encryption algorithms.\n\n - AES: Encrypt using AES with a given key."
     },
     "apiSendVerificationRequest": {
@@ -875,9 +876,9 @@
           "type": "string",
           "description": "The id of the user the datum should be shared with."
         },
-        "data": {
+        "data_key": {
           "type": "string",
-          "description": "The actual data of the datum, such as a password or code, encrypted with\nthe target user's public key."
+          "description": "The key used to encrypt the actual data, encrypted using the target user's\npublic key and decrypted with their private key."
         },
         "permissions": {
           "type": "array",

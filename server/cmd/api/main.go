@@ -22,7 +22,6 @@ import (
 var (
 	gRPCPort          = flag.Int("grpc-port", 10000, "The gRPC server port")
 	gatewayPort       = flag.Int("rest-port", 11000, "The rest server port")
-	projectId         = flag.String("project-id", "", "The Google Cloud project id")
 	privateJwtKeyPath = flag.String("private-jwt", "", "The path to the private generate used to sign jwt keys")
 	publicJwtKeyPath  = flag.String("public-jwt", "", "The path to the public generate used to sign jwt keys")
 )
@@ -44,7 +43,6 @@ func main() {
 		return
 	}
 	s := grpc.NewServer()
-	api.RegisterDataServiceServer(s, &data.Server{})
 
 	privateKey, publicKey, err := jwtKeys()
 	if err != nil {
@@ -52,12 +50,19 @@ func main() {
 		return
 	}
 
-	accountServer, err := account.NewServer(*projectId, &log, privateKey, publicKey)
+	accountServer, err := account.NewServer(&log, privateKey, publicKey)
 	if err != nil {
 		log.Fatalln("Failed to create account database client:", err)
 		return
 	}
 	api.RegisterAccountServiceServer(s, accountServer)
+
+	dataServer, err := data.NewServer(&log, publicKey)
+	if err != nil {
+		log.Fatalln("Failed to create data database client:", err)
+		return
+	}
+	api.RegisterDataServiceServer(s, dataServer)
 
 	// Serve gRPC Server
 	log.Info("Serving gRPC on http://", addr)

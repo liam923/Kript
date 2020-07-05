@@ -13,6 +13,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/grpc-ecosystem/grpc-gateway v1.14.6
 	github.com/kr/pretty v0.2.0 // indirect
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	google.golang.org/api v0.24.0
 	google.golang.org/grpc v1.29.1
 )

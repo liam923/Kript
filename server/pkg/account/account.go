@@ -2,13 +2,14 @@ package account
 
 import (
 	"context"
-	"fmt"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *Server) UpdatePassword(ctx context.Context, request *api.UpdatePasswordRequest) (*api.UpdatePasswordResponse, error) {
 	if request == nil {
-		return nil, fmt.Errorf("invalid request")
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
 	userId, err := s.loginUserWithAccessToken(*request.AccessToken)
@@ -22,7 +23,7 @@ func (s *Server) UpdatePassword(ctx context.Context, request *api.UpdatePassword
 	}
 
 	if fetchedUser.Password.Hash != request.OldPassword {
-		return nil, fmt.Errorf("incorrect old password")
+		return nil, status.Error(codes.InvalidArgument, "incorrect old password")
 	}
 
 	err = s.database.updateUser(ctx, userId, &user{
@@ -54,7 +55,7 @@ func (s *Server) UpdatePassword(ctx context.Context, request *api.UpdatePassword
 
 func (s *Server) CreateAccount(ctx context.Context, request *api.CreateAccountRequest) (*api.CreateAccountResponse, error) {
 	if request == nil {
-		return nil, fmt.Errorf("invalid request")
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
 	available, err := s.database.isUsernameAvailable(ctx, request.Username)
@@ -62,7 +63,7 @@ func (s *Server) CreateAccount(ctx context.Context, request *api.CreateAccountRe
 		return nil, err
 	}
 	if !available {
-		return nil, fmt.Errorf("username not available")
+		return nil, status.Errorf(codes.AlreadyExists, "username %s not available", request.Username)
 	}
 
 	user := user{
@@ -81,10 +82,13 @@ func (s *Server) CreateAccount(ctx context.Context, request *api.CreateAccountRe
 		TwoFactor: make([]twoFactorOption, 0),
 	}
 	userId, err := s.database.createUser(ctx, &user)
+	if err != nil {
+		return nil, err
+	}
 
 	response, err := s.grantLogin(ctx, userId, user.toApiUser(userId, true))
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &api.CreateAccountResponse{

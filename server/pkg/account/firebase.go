@@ -3,11 +3,14 @@ package account
 import (
 	"cloud.google.com/go/firestore"
 	"context"
-	"fmt"
+	"github.com/liam923/Kript/server/internal/encode"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
 	"google.golang.org/api/iterator"
-	"reflect"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
+
+const firestoreTag = "firestore"
 
 type password struct {
 	Hash          string            `firestore:"hash,omitempty"`
@@ -75,49 +78,75 @@ type fs struct {
 	db *firestore.CollectionRef
 }
 
-func (s *fs) fetchUserById(ctx context.Context, userId string) (user *user, err error) {
+func (s *fs) fetchUserById(ctx context.Context, userId string) (*user, error) {
 	doc, err := s.db.Doc(userId).Get(ctx)
+	user := &user{}
 	if err == nil {
 		err = doc.DataTo(user)
 	}
-	return
+	err = richError(err)
+	if err != nil {
+		user = nil
+	}
+	return user, err
 }
 
-func (s *fs) fetchUserByUsername(ctx context.Context, username string) (user *user, userId string, err error) {
-	if field, ok := reflect.TypeOf(user).Elem().FieldByName("Username"); ok {
-		usernameField := string(field.Tag)
-		iter := s.db.Where(usernameField, "==", username).Limit(1).Documents(ctx)
-		doc, err := iter.Next()
+func (s *fs) fetchUserByUsername(ctx context.Context, username string) (*user, string, error) {
+	iter := s.db.Where("username", "==", username).Limit(1).Documents(ctx)
+	doc, err := iter.Next()
+	if err == nil {
+		user := &user{}
+		err = doc.DataTo(user)
 		if err == nil {
-			err = doc.DataTo(user)
+			return user, doc.Ref.ID, nil
 		}
-		return nil, "", err
-	} else {
-		err = fmt.Errorf("could not find field")
-		return
+	} else if err == iterator.Done {
+		return nil, "",
+			status.Errorf(codes.NotFound, "could not find user with username %s", username)
 	}
+	return nil, "", status.Error(codes.Internal, err.Error())
 }
 
 func (s *fs) isUsernameAvailable(ctx context.Context, username string) (bool, error) {
-	if field, ok := reflect.TypeOf(&user{}).Elem().FieldByName("Username"); ok {
-		usernameField := string(field.Tag)
-		iter := s.db.Where(usernameField, "==", username).Limit(1).Documents(ctx)
-		_, err := iter.Next()
-		return err == iterator.Done, nil
+	iter := s.db.Where("username", "==", username).Limit(1).Documents(ctx)
+	_, err := iter.Next()
+	if err == iterator.Done {
+		return true, nil
+	} else if err == nil {
+		return false, nil
 	} else {
-		return false, fmt.Errorf("could not find field")
+		return false, richError(err)
 	}
 }
 
 func (s *fs) updateUser(ctx context.Context, userId string, user *user) error {
-	_, err := s.db.Doc(userId).Set(ctx, user, firestore.MergeAll)
-	return err
+	data, err := encode.ToMap(*user, firestoreTag)
+	if err != nil {
+		return richError(err)
+	}
+
+	_, err = s.db.Doc(userId).Set(ctx, data, firestore.MergeAll)
+	return richError(err)
 }
 
 func (s *fs) createUser(ctx context.Context, user *user) (userId string, err error) {
-	docRef, _, err := s.db.Add(ctx, user)
-	if err == nil {
-		userId = docRef.ID
+	data, err := encode.ToMap(*user, firestoreTag)
+	if err != nil {
+		return "", richError(err)
 	}
-	return
+
+	docRef, _, err := s.db.Add(ctx, data)
+	if err != nil {
+		return "", richError(err)
+	}
+
+	return docRef.ID, nil
+}
+
+func richError(err error) error {
+	if err == nil || status.Code(err) == codes.NotFound {
+		return err
+	} else {
+		return status.Error(codes.Internal, err.Error())
+	}
 }

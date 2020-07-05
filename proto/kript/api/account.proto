@@ -28,7 +28,7 @@ message PublicUser {
   string salt = 4;
   // The hashing algorithm used to hash the user's password.
   HashAlgorithm password_hash_algorithm = 5;
-  // The encryption algorithm used to encrypt the user's data.
+  // The encryption algorithm used to encrypt the user's data keys.
   AEncryptionAlgorithm data_encryption_algorithm = 6;
 }
 

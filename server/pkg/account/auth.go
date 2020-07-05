@@ -2,15 +2,16 @@ package account
 
 import (
 	"context"
-	"fmt"
 	"github.com/liam923/Kript/server/internal/jwt"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"time"
 )
 
 func (s *Server) LoginUser(ctx context.Context, request *api.LoginUserRequest) (*api.LoginUserResponse, error) {
 	if request == nil {
-		return nil, fmt.Errorf("request cannot be nil")
+		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
 
 	userId := ""
@@ -23,22 +24,22 @@ func (s *Server) LoginUser(ctx context.Context, request *api.LoginUserRequest) (
 	case *api.LoginUserRequest_Username:
 		user, userId, err = s.database.fetchUserByUsername(ctx, x.Username)
 	case nil:
-		err = fmt.Errorf("request.UserIdentifier must be set")
+		err = status.Error(codes.InvalidArgument, "request.UserIdentifier must be set")
 	default:
-		err = fmt.Errorf("request.UserIdentifier has unexpected type %T", x)
+		err = status.Errorf(codes.InvalidArgument, "request.UserIdentifier has unexpected type %T", x)
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	if user.Password.Hash != request.Password {
-		return nil, fmt.Errorf("incorrect password")
+		return nil, status.Error(codes.Unauthenticated, "incorrect password")
 	}
 
 	if len(user.TwoFactor) != 0 {
 		token, err := s.grantVerificationToken(ctx, userId)
 		if err != nil {
-			return nil, err
+			return nil, status.Error(codes.Internal, err.Error())
 		}
 
 		options := make([]*api.TwoFactor, len(user.TwoFactor))
@@ -63,7 +64,7 @@ func (s *Server) LoginUser(ctx context.Context, request *api.LoginUserRequest) (
 	} else {
 		response, err := s.grantLogin(ctx, userId, user.toApiUser(userId, true))
 		if err != nil {
-			return nil, err
+			return nil, status.Error(codes.Internal, err.Error())
 		}
 		return &api.LoginUserResponse{
 			ResponseType: &api.LoginUserResponse_Response{
@@ -74,29 +75,29 @@ func (s *Server) LoginUser(ctx context.Context, request *api.LoginUserRequest) (
 }
 
 func (s *Server) SendVerification(context.Context, *api.SendVerificationRequest) (*api.SendVerificationResponse, error) {
-	return nil, fmt.Errorf("two factor auth is unimplemented")
+	return nil, status.Error(codes.Unimplemented, "two factor auth is unimplemented")
 }
 
 func (s *Server) VerifyUser(context.Context, *api.VerifyUserRequest) (*api.VerifyUserResponse, error) {
-	return nil, fmt.Errorf("two factor auth is unimplemented")
+	return nil, status.Error(codes.Unimplemented, "two factor auth is unimplemented")
 }
 
 func (s *Server) RefreshAuth(ctx context.Context, request *api.RefreshAuthRequest) (*api.RefreshAuthResponse, error) {
 	if request == nil || !s.validateRefreshTokenFormat(request.RefreshToken) {
-		return nil, fmt.Errorf("invalid request")
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
 	userId, tokenType, _, err := s.validator.ValidateJWT(request.RefreshToken.Jwt.Token)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Unauthenticated, "invalid access token")
 	}
 	if tokenType != jwt.RefreshTokenType {
-		return nil, fmt.Errorf("incorrect token type: %s", tokenType)
+		return nil, status.Errorf(codes.InvalidArgument, "incorrect token type: %s", tokenType)
 	}
 
 	accessToken, _, err := s.signer.CreateAndSignJWT(userId, time.Now().Add(s.accessTokenLife), jwt.AccessTokenType)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &api.RefreshAuthResponse{
@@ -109,10 +110,10 @@ func (s *Server) RefreshAuth(ctx context.Context, request *api.RefreshAuthReques
 func (s *Server) loginUserWithAccessToken(token api.AccessToken) (userId string, err error) {
 	userId, tokenType, _, err := s.validator.ValidateJWT(token.Jwt.Token)
 	if tokenType != jwt.AccessTokenType {
-		err = fmt.Errorf("incorrect token type: %s", tokenType)
+		return "", status.Errorf(codes.Unauthenticated, "incorrect token type: %s", tokenType)
 	}
 	if err != nil {
-		return "", err
+		return "", status.Error(codes.Unauthenticated, err.Error())
 	}
 	return userId, nil
 }
