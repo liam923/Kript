@@ -3,20 +3,23 @@ package kript.api;
 
 // An enumeration of different password hashing algorithms.
 enum HashAlgorithm {
+  UNKNOWN_HASH_ALGORITHM = 0;
   // Concatenate password + salt and use SHA-512.
-  SHA_512 = 0;
+  SHA_512 = 1;
 }
 
 // An enumeration of different symmetric encryption algorithms.
 enum SEncryptionAlgorithm {
+  UNKNOWN_S_ENCRYPTION_ALGORITHM = 0;
   // Encrypt using AES with a given key.
-  AES = 0;
+  AES = 1;
 }
 
 // An enumeration of different asymmetric encryption algorithms.
 enum AEncryptionAlgorithm {
+  UNKNOWN_A_ENCRYPTION_ALGORITHM = 0;
   // Encrypt using AES with a given key.
-  RSA = 0;
+  RSA = 1;
 }
 
 message AccessToken {

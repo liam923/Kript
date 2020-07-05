@@ -27,16 +27,13 @@ message Datum {
   // The actual data of this datum, such as a password or code, encrypted.
   // This should decrypt to a string of a json object.
   string data = 4;
-  // The key used to encrypt the actual data, encrypted using the owner's
-  // public key and decrypted with their private key.
-  string data_key = 5;
   // The encryption algorithm used to encrypt the actual data.
-  SEncryptionAlgorithm data_encryption_algorithm = 6;
+  SEncryptionAlgorithm data_encryption_algorithm = 5;
   // A map of ids of users who have access to this datum to information on what
-  // permissions they have.
-  map<string, Access> accessors = 7;
+  // permissions they have. This does not include the owner, who has all permissions.
+  map<string, Access> accessors = 6;
   // The metadata associated with this datum.
-  Metadata metadata = 8;
+  Metadata metadata = 7;
 
   // An object representing relevant data to a user who has access to this
   // datum.
@@ -53,7 +50,7 @@ message Datum {
   // The metadata associated with this datum.
   message Metadata {
     // The user who created and owns this datum.
-    string owner = 1;
+    string owner_id = 1;
     // The time at which this datum was created.
     google.protobuf.Timestamp created_time = 2;
     // The time at which this datum was last modified.
@@ -81,15 +78,18 @@ message Datum {
 
 // A permission that a user can have on a datum.
 enum Permission {
+  UNKNOWN = 0;
   // Permission to read the datum.
-  READ = 0;
-  // Permission to write the datum.
-  WRITE = 1;
-  // Permission to delete the datum.
-  DELETE = 2;
-  // Permission to share the datum with other users. The user has the power
+  READ = 1;
+  // Permission to read and write the datum.
+  WRITE = 2;
+  // Permission to read and delete the datum.
+  DELETE = 3;
+  // Permission to read and share the datum with other users. The user has the power
   // to share the same permissions that they have.
-  SHARE = 3;
+  SHARE = 4;
+  // Full permission on the datum.
+  ADMIN = 5;
 }
 
 service DataService {
@@ -202,9 +202,9 @@ message ShareDatumRequest {
   string id = 2;
   // The id of the user the datum should be shared with.
   string target_id = 3;
-  // The actual data of the datum, such as a password or code, encrypted with
-  // the target user's public key.
-  string data = 4;
+  // The key used to encrypt the actual data, encrypted using the target user's
+  // public key and decrypted with their private key.
+  string data_key = 4;
   // The permissions to be granted to this user. These are in addition to any
   // permissions the user already has.
   repeated Permission permissions = 5;

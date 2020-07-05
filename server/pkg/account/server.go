@@ -4,6 +4,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"context"
 	"github.com/liam923/Kript/server/internal/jwt"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/grpc/grpclog"
 	"time"
 )
@@ -21,8 +22,12 @@ type Server struct {
 
 // Create a new Server. projectId is the id of the project that the Firestore database is housed in, and generate
 // is used to sign tokens.
-func NewServer(projectId string, logger *grpclog.LoggerV2, privateKey []byte, publicKey []byte) (*Server, error) {
-	client, err := firestore.NewClient(context.Background(), projectId)
+func NewServer(logger *grpclog.LoggerV2, privateKey []byte, publicKey []byte) (*Server, error) {
+	googleCreds, err := google.FindDefaultCredentials(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	client, err := firestore.NewClient(context.Background(), googleCreds.ProjectID)
 	if err != nil {
 		return nil, err
 	}

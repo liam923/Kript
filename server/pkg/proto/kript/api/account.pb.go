@@ -70,7 +70,7 @@ type PublicUser struct {
 	Salt string `protobuf:"bytes,4,opt,name=salt,proto3" json:"salt,omitempty"`
 	// The hashing algorithm used to hash the user's password.
 	PasswordHashAlgorithm HashAlgorithm `protobuf:"varint,5,opt,name=password_hash_algorithm,json=passwordHashAlgorithm,proto3,enum=kript.api.HashAlgorithm" json:"password_hash_algorithm,omitempty"`
-	// The encryption algorithm used to encrypt the user's data.
+	// The encryption algorithm used to encrypt the user's data keys.
 	DataEncryptionAlgorithm AEncryptionAlgorithm `protobuf:"varint,6,opt,name=data_encryption_algorithm,json=dataEncryptionAlgorithm,proto3,enum=kript.api.AEncryptionAlgorithm" json:"data_encryption_algorithm,omitempty"`
 	XXX_NoUnkeyedLiteral    struct{}             `json:"-"`
 	XXX_unrecognized        []byte               `json:"-"`
@@ -133,14 +133,14 @@ func (m *PublicUser) GetPasswordHashAlgorithm() HashAlgorithm {
 	if m != nil {
 		return m.PasswordHashAlgorithm
 	}
-	return HashAlgorithm_SHA_512
+	return HashAlgorithm_UNKNOWN_HASH_ALGORITHM
 }
 
 func (m *PublicUser) GetDataEncryptionAlgorithm() AEncryptionAlgorithm {
 	if m != nil {
 		return m.DataEncryptionAlgorithm
 	}
-	return AEncryptionAlgorithm_RSA
+	return AEncryptionAlgorithm_UNKNOWN_A_ENCRYPTION_ALGORITHM
 }
 
 // Private information about a user that is only visible to the user.
@@ -189,7 +189,7 @@ func (m *PrivateUser) GetPrivateKeyEncryptionAlgorithm() SEncryptionAlgorithm {
 	if m != nil {
 		return m.PrivateKeyEncryptionAlgorithm
 	}
-	return SEncryptionAlgorithm_AES
+	return SEncryptionAlgorithm_UNKNOWN_S_ENCRYPTION_ALGORITHM
 }
 
 // The public and private information about a user.
@@ -918,7 +918,7 @@ func (m *UpdatePasswordRequest) GetNewPasswordHashAlgorithm() HashAlgorithm {
 	if m != nil {
 		return m.NewPasswordHashAlgorithm
 	}
-	return HashAlgorithm_SHA_512
+	return HashAlgorithm_UNKNOWN_HASH_ALGORITHM
 }
 
 func (m *UpdatePasswordRequest) GetPrivateKey() string {
@@ -932,7 +932,7 @@ func (m *UpdatePasswordRequest) GetPrivateKeyEncryptionAlgorithm() SEncryptionAl
 	if m != nil {
 		return m.PrivateKeyEncryptionAlgorithm
 	}
-	return SEncryptionAlgorithm_AES
+	return SEncryptionAlgorithm_UNKNOWN_S_ENCRYPTION_ALGORITHM
 }
 
 type UpdatePasswordResponse struct {
@@ -1045,7 +1045,7 @@ func (m *CreateAccountRequest) GetPasswordHashAlgorithm() HashAlgorithm {
 	if m != nil {
 		return m.PasswordHashAlgorithm
 	}
-	return HashAlgorithm_SHA_512
+	return HashAlgorithm_UNKNOWN_HASH_ALGORITHM
 }
 
 func (m *CreateAccountRequest) GetPublicKey() string {
@@ -1066,14 +1066,14 @@ func (m *CreateAccountRequest) GetDataEncryptionAlgorithm() AEncryptionAlgorithm
 	if m != nil {
 		return m.DataEncryptionAlgorithm
 	}
-	return AEncryptionAlgorithm_RSA
+	return AEncryptionAlgorithm_UNKNOWN_A_ENCRYPTION_ALGORITHM
 }
 
 func (m *CreateAccountRequest) GetPrivateKeyEncryptionAlgorithm() SEncryptionAlgorithm {
 	if m != nil {
 		return m.PrivateKeyEncryptionAlgorithm
 	}
-	return SEncryptionAlgorithm_AES
+	return SEncryptionAlgorithm_UNKNOWN_S_ENCRYPTION_ALGORITHM
 }
 
 type CreateAccountResponse struct {

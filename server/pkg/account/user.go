@@ -2,17 +2,18 @@ package account
 
 import (
 	"context"
-	"fmt"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *Server) GetUser(ctx context.Context, request *api.GetUserRequest) (response *api.GetUserResponse, err error) {
 	if request == nil || !s.validateAccessTokenFormat(request.AccessToken) {
-		return nil, fmt.Errorf("invalid request")
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	loggedInUserId, err := s.loginUserWithAccessToken(*request.AccessToken)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	userId := ""
@@ -24,12 +25,12 @@ func (s *Server) GetUser(ctx context.Context, request *api.GetUserRequest) (resp
 	case *api.GetUserRequest_Username:
 		user, userId, err = s.database.fetchUserByUsername(ctx, x.Username)
 	case nil:
-		err = fmt.Errorf("request.UserIdentifier must be set")
+		err = status.Error(codes.InvalidArgument, "request.UserIdentifier must be set")
 	default:
-		err = fmt.Errorf("request.UserIdentifier has unexpected type %T", x)
+		err = status.Errorf(codes.InvalidArgument, "request.UserIdentifier has unexpected type %T", x)
 	}
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	apiUser := user.toApiUser(userId, userId == loggedInUserId)
