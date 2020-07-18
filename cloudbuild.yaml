@@ -8,6 +8,12 @@ steps:
       path: '/sandbox'
     args: ['bash', '-c', 'mkdir -p "/sandbox" && cp -r . "/sandbox/repo"']
 
+  - name: gcr.io/cloud-builders/gcloud
+    id: 'secrets'
+    entrypoint: 'bash'
+    args: ['server/scripts/get_secrets']
+    waitFor: ['sandbox']
+
   - name: golang:1.14
     id: 'server.validate'
     volumes:
@@ -31,9 +37,31 @@ steps:
     waitFor: ['sandbox']
 
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'server.build.api'
-    args: ['build', '-f', 'Dockerfile.api', '-t', 'gcr.io/${PROJECT_ID}/server-api:${SHORT_SHA}', '.']
+    id: 'server.build.gateway'
+    args: ['build', '-f', 'Dockerfile.gateway', '-t', 'gcr.io/${PROJECT_ID}/kript-gateway:${SHORT_SHA}', '.']
     dir: 'server'
-    waitFor: ['sandbox']
+    waitFor: ['sandbox', 'secrets']
 
-images: ['gcr.io/${PROJECT_ID}/server-api:${SHORT_SHA}']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'server.build.grpc'
+    args: ['build', '-f', 'Dockerfile.grpc', '-t', 'gcr.io/${PROJECT_ID}/kript-grpc:${SHORT_SHA}', '.']
+    dir: 'server'
+    waitFor: ['sandbox', 'secrets']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'server.build.account'
+    args: ['build', '-f', 'Dockerfile.account', '-t', 'gcr.io/${PROJECT_ID}/kript-account:${SHORT_SHA}', '.']
+    dir: 'server'
+    waitFor: ['sandbox', 'secrets']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'server.build.data'
+    args: ['build', '-f', 'Dockerfile.data', '-t', 'gcr.io/${PROJECT_ID}/kript-data:${SHORT_SHA}', '.']
+    dir: 'server'
+    waitFor: ['sandbox', 'secrets']
+
+images:
+  - 'gcr.io/${PROJECT_ID}/kript-gateway:${SHORT_SHA}'
+  - 'gcr.io/${PROJECT_ID}/kript-grpc:${SHORT_SHA}'
+  - 'gcr.io/${PROJECT_ID}/kript-account:${SHORT_SHA}'
+  - 'gcr.io/${PROJECT_ID}/kript-data:${SHORT_SHA}'
