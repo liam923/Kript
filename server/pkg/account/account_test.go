@@ -27,7 +27,10 @@ func (u *userMatcher) Matches(x interface{}) bool {
 			u.user.Password.Salt == v.Password.Salt &&
 			bytes.Compare(u.user.Keys.PublicKey, v.Keys.PublicKey) == 0 &&
 			bytes.Compare(u.user.Keys.PrivateKey, v.Keys.PrivateKey) == 0 &&
+			bytes.Compare(u.user.Keys.PrivateKeyIv, v.Keys.PrivateKeyIv) == 0 &&
 			u.user.Keys.PrivateKeyEncryptionAlgorithm == v.Keys.PrivateKeyEncryptionAlgorithm &&
+			u.user.Keys.PrivateKeyKeySalt == v.Keys.PrivateKeyKeySalt &&
+			u.user.Keys.PrivateKeyKeyHashAlgorithm == v.Keys.PrivateKeyKeyHashAlgorithm &&
 			u.user.Keys.DataEncryptionAlgorithm == v.Keys.DataEncryptionAlgorithm &&
 			len(u.user.TwoFactor) == len(v.TwoFactor) {
 			return true
@@ -78,6 +81,9 @@ func TestUpdatePassword(t *testing.T) {
 				NewSalt:                       "pepper",
 				NewPasswordHashAlgorithm:      0,
 				PrivateKey:                    &api.EBytes{Data: []byte("re-encrypted")},
+				PrivateKeyIv:                  []byte("hello world"),
+				PrivateKeyKeySalt:             "oregano",
+				PrivateKeyKeyHashAlgorithm:    0,
 				PrivateKeyEncryptionAlgorithm: 0,
 			},
 			user: user{
@@ -90,6 +96,9 @@ func TestUpdatePassword(t *testing.T) {
 				Keys: keys{
 					PublicKey:                     []byte("public"),
 					PrivateKey:                    []byte("encrypted"),
+					PrivateKeyIv:                  []byte("not hello world"),
+					PrivateKeyKeySalt:             "not oregano",
+					PrivateKeyKeyHashAlgorithm:    0,
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
@@ -108,6 +117,9 @@ func TestUpdatePassword(t *testing.T) {
 				NewSalt:                       "pepper",
 				NewPasswordHashAlgorithm:      0,
 				PrivateKey:                    &api.EBytes{Data: []byte("re-encrypted")},
+				PrivateKeyIv:                  []byte("hello world"),
+				PrivateKeyKeySalt:             "oregano",
+				PrivateKeyKeyHashAlgorithm:    0,
 				PrivateKeyEncryptionAlgorithm: 0,
 			},
 			user: user{
@@ -120,6 +132,9 @@ func TestUpdatePassword(t *testing.T) {
 				Keys: keys{
 					PublicKey:                     []byte("public"),
 					PrivateKey:                    []byte("encrypted"),
+					PrivateKeyIv:                  []byte("not hello world"),
+					PrivateKeyKeySalt:             "not oregano",
+					PrivateKeyKeyHashAlgorithm:    0,
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
@@ -145,6 +160,9 @@ func TestUpdatePassword(t *testing.T) {
 				NewSalt:                       "pepper",
 				NewPasswordHashAlgorithm:      0,
 				PrivateKey:                    &api.EBytes{Data: []byte("re-encrypted")},
+				PrivateKeyIv:                  []byte("not hello world"),
+				PrivateKeyKeySalt:             "not oregano",
+				PrivateKeyKeyHashAlgorithm:    0,
 				PrivateKeyEncryptionAlgorithm: 0,
 			},
 			user: user{
@@ -157,6 +175,9 @@ func TestUpdatePassword(t *testing.T) {
 				Keys: keys{
 					PublicKey:                     []byte("public"),
 					PrivateKey:                    []byte("encrypted"),
+					PrivateKeyIv:                  []byte("not hello world"),
+					PrivateKeyKeySalt:             "not oregano",
+					PrivateKeyKeyHashAlgorithm:    0,
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
@@ -180,6 +201,9 @@ func TestUpdatePassword(t *testing.T) {
 				Keys: keys{
 					PublicKey:                     []byte("public"),
 					PrivateKey:                    []byte("encrypted"),
+					PrivateKeyIv:                  []byte("not hello world"),
+					PrivateKeyKeySalt:             "not oregano",
+					PrivateKeyKeyHashAlgorithm:    0,
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
@@ -207,6 +231,9 @@ func TestUpdatePassword(t *testing.T) {
 							},
 							Keys: keys{
 								PrivateKey:                    tt.request.PrivateKey.Data,
+								PrivateKeyIv:                  tt.request.PrivateKeyIv,
+								PrivateKeyKeySalt:             tt.request.PrivateKeyKeySalt,
+								PrivateKeyKeyHashAlgorithm:    tt.request.PrivateKeyKeyHashAlgorithm,
 								PrivateKeyEncryptionAlgorithm: tt.request.PrivateKeyEncryptionAlgorithm,
 							},
 						}}).
@@ -234,6 +261,9 @@ func TestUpdatePassword(t *testing.T) {
 					Keys: keys{
 						PublicKey:                     tt.user.Keys.PublicKey,
 						PrivateKey:                    tt.request.PrivateKey.Data,
+						PrivateKeyIv:                  tt.request.PrivateKeyIv,
+						PrivateKeyKeySalt:             tt.request.PrivateKeyKeySalt,
+						PrivateKeyKeyHashAlgorithm:    tt.request.PrivateKeyKeyHashAlgorithm,
 						PrivateKeyEncryptionAlgorithm: tt.request.PrivateKeyEncryptionAlgorithm,
 						DataEncryptionAlgorithm:       tt.user.Keys.DataEncryptionAlgorithm,
 					},
@@ -244,8 +274,11 @@ func TestUpdatePassword(t *testing.T) {
 					expectedUser.Public.DataEncryptionAlgorithm != response.User.Public.DataEncryptionAlgorithm ||
 					bytes.Compare(expectedUser.Public.PublicKey, response.User.Public.PublicKey) != 0 ||
 					expectedUser.Public.PasswordHashAlgorithm != response.User.Public.PasswordHashAlgorithm ||
-					expectedUser.Public.Salt != response.User.Public.Salt ||
+					expectedUser.Public.PasswordSalt != response.User.Public.PasswordSalt ||
 					bytes.Compare(expectedUser.Private.PrivateKey.Data, response.User.Private.PrivateKey.Data) != 0 ||
+					bytes.Compare(expectedUser.Private.PrivateKeyIv, response.User.Private.PrivateKeyIv) != 0 ||
+					expectedUser.Private.PrivateKeyKeySalt != response.User.Private.PrivateKeyKeySalt ||
+					expectedUser.Private.PrivateKeyKeyHashAlgorithm != response.User.Private.PrivateKeyKeyHashAlgorithm ||
 					expectedUser.Private.PrivateKeyEncryptionAlgorithm != response.User.Private.PrivateKeyEncryptionAlgorithm {
 					t.Errorf("invalid user returned: %v, expected: %v", response.User, expectedUser)
 				}
@@ -258,6 +291,9 @@ func TestUpdatePassword(t *testing.T) {
 						NewSalt:                       tt.request.NewSalt,
 						NewPasswordHashAlgorithm:      tt.request.NewPasswordHashAlgorithm,
 						PrivateKey:                    tt.request.PrivateKey,
+						PrivateKeyIv:                  tt.request.PrivateKeyIv,
+						PrivateKeyKeySalt:             tt.request.PrivateKeyKeySalt,
+						PrivateKeyKeyHashAlgorithm:    tt.request.PrivateKeyKeyHashAlgorithm,
 						PrivateKeyEncryptionAlgorithm: tt.request.PrivateKeyEncryptionAlgorithm,
 					})
 					if response != nil || err == nil {
@@ -293,6 +329,9 @@ func TestCreateAccount(t *testing.T) {
 				PasswordHashAlgorithm:         0,
 				PublicKey:                     []byte("1234567890"),
 				PrivateKey:                    &api.EBytes{Data: []byte("0987654321")},
+				PrivateKeyIv:                  []byte("init"),
+				PrivateKeyKeySalt:             "salty",
+				PrivateKeyKeyHashAlgorithm:    0,
 				DataEncryptionAlgorithm:       0,
 				PrivateKeyEncryptionAlgorithm: 0,
 			},
@@ -306,6 +345,9 @@ func TestCreateAccount(t *testing.T) {
 				PasswordHashAlgorithm:         0,
 				PublicKey:                     []byte("public"),
 				PrivateKey:                    &api.EBytes{Data: []byte("private")},
+				PrivateKeyIv:                  []byte("init"),
+				PrivateKeyKeySalt:             "salty",
+				PrivateKeyKeyHashAlgorithm:    0,
 				DataEncryptionAlgorithm:       0,
 				PrivateKeyEncryptionAlgorithm: 0,
 			},
@@ -319,6 +361,9 @@ func TestCreateAccount(t *testing.T) {
 				PasswordHashAlgorithm:         0,
 				PublicKey:                     []byte("1234567890"),
 				PrivateKey:                    &api.EBytes{Data: []byte("0987654321")},
+				PrivateKeyIv:                  []byte("init"),
+				PrivateKeyKeySalt:             "salty",
+				PrivateKeyKeyHashAlgorithm:    0,
 				DataEncryptionAlgorithm:       0,
 				PrivateKeyEncryptionAlgorithm: 0,
 			},
@@ -342,7 +387,10 @@ func TestCreateAccount(t *testing.T) {
 				Keys: keys{
 					PublicKey:                     tt.request.PublicKey,
 					PrivateKey:                    tt.request.PrivateKey.Data,
+					PrivateKeyIv:                  tt.request.PrivateKeyIv,
 					PrivateKeyEncryptionAlgorithm: tt.request.PrivateKeyEncryptionAlgorithm,
+					PrivateKeyKeySalt:             tt.request.PrivateKeyKeySalt,
+					PrivateKeyKeyHashAlgorithm:    tt.request.PrivateKeyKeyHashAlgorithm,
 					DataEncryptionAlgorithm:       tt.request.DataEncryptionAlgorithm,
 				},
 				TwoFactor: nil,
@@ -376,10 +424,13 @@ func TestCreateAccount(t *testing.T) {
 						expectedUser.Public.DataEncryptionAlgorithm != response.Response.User.Public.DataEncryptionAlgorithm ||
 						bytes.Compare(expectedUser.Public.PublicKey, response.Response.User.Public.PublicKey) != 0 ||
 						expectedUser.Public.PasswordHashAlgorithm != response.Response.User.Public.PasswordHashAlgorithm ||
-						expectedUser.Public.Salt != response.Response.User.Public.Salt ||
+						expectedUser.Public.PasswordSalt != response.Response.User.Public.PasswordSalt ||
 						bytes.Compare(expectedUser.Private.PrivateKey.Data, response.Response.User.Private.PrivateKey.Data) != 0 ||
+						bytes.Compare(expectedUser.Private.PrivateKeyIv, response.Response.User.Private.PrivateKeyIv) != 0 ||
+						expectedUser.Private.PrivateKeyKeySalt != response.Response.User.Private.PrivateKeyKeySalt ||
+						expectedUser.Private.PrivateKeyKeyHashAlgorithm != response.Response.User.Private.PrivateKeyKeyHashAlgorithm ||
 						expectedUser.Private.PrivateKeyEncryptionAlgorithm != response.Response.User.Private.PrivateKeyEncryptionAlgorithm {
-						t.Errorf("invalid user returned: %v", response.Response.User)
+						t.Errorf("invalid user returned: %v, expected: %v", response.Response.User, expectedUser)
 					}
 				}
 			}

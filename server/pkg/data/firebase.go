@@ -44,6 +44,7 @@ type datum struct {
 	Title                   string                   `firestore:"title,omitempty"`
 	Data                    []byte                   `firestore:"data,omitempty"`
 	DataEncryptionAlgorithm api.SEncryptionAlgorithm `firestore:"dataEncryptionAlgorithm,omitempty"`
+	DataIv                  []byte                   `firestore:"dataIv,omitempty"`
 	Accessors               map[string]accessor      `firestore:"accessors,omitempty"`
 	Metadata                metadata                 `firestore:"metadata,omitempty"`
 }
@@ -86,6 +87,7 @@ func (d datum) toApiDatum(id string) *api.Datum {
 		Title:                   d.Title,
 		Data:                    &api.ESecret{Data: d.Data},
 		DataEncryptionAlgorithm: d.DataEncryptionAlgorithm,
+		DataIv:                  d.DataIv,
 		Accessors:               accessors,
 		Metadata: &api.Datum_Metadata{
 			OwnerId: d.Metadata.OwnerId,

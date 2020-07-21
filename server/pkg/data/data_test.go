@@ -394,9 +394,11 @@ func TestUpdateDatum(t *testing.T) {
 		{
 			testName: "valid",
 			request: api.UpdateDatumRequest{
-				Id:    "1",
-				Title: "new title",
-				Data:  &api.ESecret{Data: []byte("new data")},
+				Id:                      "1",
+				Title:                   "new title",
+				Data:                    &api.ESecret{Data: []byte("new data")},
+				DataEncryptionAlgorithm: 1,
+				DataIv:                  []byte("iodnjewq"),
 			},
 			err: nil,
 			fetchDatum: fetchDatum{
@@ -421,9 +423,11 @@ func TestUpdateDatum(t *testing.T) {
 		{
 			testName: "invalid id",
 			request: api.UpdateDatumRequest{
-				Id:    "1",
-				Title: "new title",
-				Data:  &api.ESecret{Data: []byte("new data")},
+				Id:                      "1",
+				Title:                   "new title",
+				Data:                    &api.ESecret{Data: []byte("new data")},
+				DataEncryptionAlgorithm: 1,
+				DataIv:                  []byte("iodnjewq"),
 			},
 			err: status.Error(codes.Internal, "error"),
 			fetchDatum: fetchDatum{
@@ -435,9 +439,11 @@ func TestUpdateDatum(t *testing.T) {
 		{
 			testName: "unauthorized write",
 			request: api.UpdateDatumRequest{
-				Id:    "2",
-				Title: "new title",
-				Data:  &api.ESecret{Data: []byte("new data")},
+				Id:                      "2",
+				Title:                   "new title",
+				Data:                    &api.ESecret{Data: []byte("new data")},
+				DataEncryptionAlgorithm: 1,
+				DataIv:                  []byte("iodnjewq"),
 			},
 			err: status.Errorf(codes.PermissionDenied, "write access denied for datum 2"),
 			fetchDatum: fetchDatum{
@@ -467,9 +473,11 @@ func TestUpdateDatum(t *testing.T) {
 		{
 			testName: "write error",
 			request: api.UpdateDatumRequest{
-				Id:    "2",
-				Title: "new title",
-				Data:  &api.ESecret{Data: []byte("new data")},
+				Id:                      "2",
+				Title:                   "new title",
+				Data:                    &api.ESecret{Data: []byte("new data")},
+				DataEncryptionAlgorithm: 1,
+				DataIv:                  []byte("iodnjewq"),
 			},
 			err: status.Errorf(codes.PermissionDenied, "write access denied for datum 2"),
 			fetchDatum: fetchDatum{
@@ -510,6 +518,8 @@ func TestUpdateDatum(t *testing.T) {
 				expectedDatum := tt.fetchDatum.datum
 				expectedDatum.Title = tt.request.Title
 				expectedDatum.Data = tt.request.Data.Data
+				expectedDatum.DataEncryptionAlgorithm = tt.request.DataEncryptionAlgorithm
+				expectedDatum.DataIv = tt.request.DataIv
 				db.EXPECT().
 					updateDatum(context.Background(), partialDatumMatcher{datum: expectedDatum}, tt.fetchDatum.id).
 					Return(tt.updateErr)
@@ -535,10 +545,11 @@ func TestUpdateDatum(t *testing.T) {
 				if expectedId != actual.Id ||
 					expected.Owner != actual.Owner ||
 					bytes.Compare(tt.request.Data.Data, actual.Data.Data) != 0 ||
-					expected.DataEncryptionAlgorithm != actual.DataEncryptionAlgorithm ||
+					bytes.Compare(tt.request.DataIv, actual.DataIv) != 0 ||
+					tt.request.DataEncryptionAlgorithm != actual.DataEncryptionAlgorithm ||
 					tt.request.Title != actual.Title ||
 					len(expected.Accessors) != len(actual.Accessors) {
-					t.Errorf("unexpected response: %v", response)
+					t.Errorf("unexpected response: %v, expected: %v", response, expected)
 				}
 			}
 
@@ -611,6 +622,7 @@ func TestCreateDatum(t *testing.T) {
 				Title:                   "TITLE",
 				Data:                    []byte("DATA"),
 				DataEncryptionAlgorithm: 0,
+				DataIv:                  []byte("suh dude"),
 				Accessors: map[string]accessor{
 					"liam923": {
 						UserId:      "liam923",
@@ -631,6 +643,7 @@ func TestCreateDatum(t *testing.T) {
 				Title:                   "TITLE",
 				Data:                    []byte("DATA"),
 				DataEncryptionAlgorithm: 0,
+				DataIv:                  []byte("suh dude"),
 				Accessors: map[string]accessor{
 					"liam923": {
 						UserId:      "liam923",
@@ -660,6 +673,7 @@ func TestCreateDatum(t *testing.T) {
 				Data:                    &api.ESecret{Data: tt.datum.Data},
 				DataKey:                 &api.EBytes{Data: tt.datum.Accessors["liam923"].DataKey},
 				DataEncryptionAlgorithm: tt.datum.DataEncryptionAlgorithm,
+				DataIv:                  tt.datum.DataIv,
 			}
 
 			response, err := server.CreateDatum(context.Background(), &request)
@@ -677,6 +691,7 @@ func TestCreateDatum(t *testing.T) {
 				if expectedId != actual.Id ||
 					expected.Owner != actual.Owner ||
 					bytes.Compare(expected.Data, actual.Data.Data) != 0 ||
+					bytes.Compare(expected.DataIv, actual.DataIv) != 0 ||
 					expected.DataEncryptionAlgorithm != actual.DataEncryptionAlgorithm ||
 					expected.Title != actual.Title ||
 					len(expected.Accessors) != len(actual.Accessors) {
@@ -693,6 +708,7 @@ func TestCreateDatum(t *testing.T) {
 					Data:                    &api.ESecret{Data: tt.datum.Data},
 					DataKey:                 &api.EBytes{Data: tt.datum.Accessors["liam923"].DataKey},
 					DataEncryptionAlgorithm: tt.datum.DataEncryptionAlgorithm,
+					DataIv:                  tt.datum.DataIv,
 				}
 				response, err := server.CreateDatum(context.Background(), &request)
 				if err == nil {

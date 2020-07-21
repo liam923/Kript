@@ -4,21 +4,29 @@ package kript.api;
 // An enumeration of different password hashing algorithms.
 enum HashAlgorithm {
   UNKNOWN_HASH_ALGORITHM = 0;
-  // Concatenate password + salt and use SHA-512.
-  SHA_512 = 1;
+  // Hash the utf-8 encoded password and utf-8 encoded salt using bcrypt with a cost of 10.
+  BCRYPT = 1;
+  // Hash the utf-8 encoded password and utf-8 encoded salt using scrypt with N=16384, r=8, p=1, and derived key length = 256 bits
+  SCRYPT = 2;
+  // Hash the utf-8 encoded password and utf-8 encoded salt using PBKDF2 with SHA512, 20000 iterations, and a derived key length of 256 bits
+  PBKDF2_SHA_512 = 3;
+  // Hash the utf-8 encoded password and utf-8 encoded salt using Argon2id, with t=75, m=1024, p=1, T=32 (derived key length of 256 bits).
+  ARGON2 = 4;
 }
 
 // An enumeration of different symmetric encryption algorithms.
 enum SEncryptionAlgorithm {
   UNKNOWN_S_ENCRYPTION_ALGORITHM = 0;
-  // Encrypt using AES with a given key.
-  AES = 1;
+  // Encrypt using AES-256 with a given key and initialization vector, using CBC and PKCS7 padding. If the key is longer than 256 bits, it is truncated to 256. If it is shorter, it is zero-padded.
+  AES_256_CBC = 1;
+  // Encrypt using AES-256 with a given key and initialization vector, using GCM. If the key is longer than 256 bits, it is truncated to 256. If it is shorter, it is zero-padded.
+  AES_256_GCM = 2;
 }
 
 // An enumeration of different asymmetric encryption algorithms.
 enum AEncryptionAlgorithm {
   UNKNOWN_A_ENCRYPTION_ALGORITHM = 0;
-  // Encrypt using AES with a given key.
+  // Encrypt/Decrypt using RSA, using OAEP padding.
   RSA = 1;
 }
 

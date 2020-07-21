@@ -35,6 +35,9 @@ func (s *Server) UpdatePassword(ctx context.Context, request *api.UpdatePassword
 		},
 		Keys: keys{
 			PrivateKey:                    request.PrivateKey.Data,
+			PrivateKeyIv:                  request.PrivateKeyIv,
+			PrivateKeyKeySalt:             request.PrivateKeyKeySalt,
+			PrivateKeyKeyHashAlgorithm:    request.PrivateKeyKeyHashAlgorithm,
 			PrivateKeyEncryptionAlgorithm: request.PrivateKeyEncryptionAlgorithm,
 		},
 	})
@@ -47,6 +50,9 @@ func (s *Server) UpdatePassword(ctx context.Context, request *api.UpdatePassword
 	updatedUser.Password.Salt = request.NewSalt
 	updatedUser.Password.HashAlgorithm = request.NewPasswordHashAlgorithm
 	updatedUser.Keys.PrivateKey = request.PrivateKey.Data
+	updatedUser.Keys.PrivateKeyIv = request.PrivateKeyIv
+	updatedUser.Keys.PrivateKeyKeySalt = request.PrivateKeyKeySalt
+	updatedUser.Keys.PrivateKeyKeyHashAlgorithm = request.PrivateKeyKeyHashAlgorithm
 	updatedUser.Keys.PrivateKeyEncryptionAlgorithm = request.PrivateKeyEncryptionAlgorithm
 	apiUser := updatedUser.toApiUser(userId, true)
 	return &api.UpdatePasswordResponse{
@@ -77,7 +83,10 @@ func (s *Server) CreateAccount(ctx context.Context, request *api.CreateAccountRe
 		Keys: keys{
 			PublicKey:                     request.PublicKey,
 			PrivateKey:                    request.PrivateKey.Data,
+			PrivateKeyIv:                  request.PrivateKeyIv,
 			PrivateKeyEncryptionAlgorithm: request.PrivateKeyEncryptionAlgorithm,
+			PrivateKeyKeySalt:             request.PrivateKeyKeySalt,
+			PrivateKeyKeyHashAlgorithm:    request.PrivateKeyKeyHashAlgorithm,
 			DataEncryptionAlgorithm:       request.DataEncryptionAlgorithm,
 		},
 		TwoFactor: make([]twoFactorOption, 0),

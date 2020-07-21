@@ -202,7 +202,7 @@ func TestGetUser(t *testing.T) {
 					expectedUser.Public.DataEncryptionAlgorithm != response.User.Public.DataEncryptionAlgorithm ||
 					bytes.Compare(expectedUser.Public.PublicKey, response.User.Public.PublicKey) != 0 ||
 					expectedUser.Public.PasswordHashAlgorithm != response.User.Public.PasswordHashAlgorithm ||
-					expectedUser.Public.Salt != response.User.Public.Salt ||
+					expectedUser.Public.PasswordSalt != response.User.Public.PasswordSalt ||
 					(expectedUser.Private == nil && response.User.Private != nil) ||
 					(expectedUser.Private != nil && (bytes.Compare(expectedUser.Private.PrivateKey.Data, response.User.Private.PrivateKey.Data) != 0 ||
 						expectedUser.Private.PrivateKeyEncryptionAlgorithm != response.User.Private.PrivateKeyEncryptionAlgorithm)) {

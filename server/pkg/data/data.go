@@ -76,6 +76,8 @@ func (s *Server) UpdateDatum(ctx context.Context, request *api.UpdateDatumReques
 	newDatum := *oldDatum
 	newDatum.Title = request.Title
 	newDatum.Data = request.Data.Data
+	newDatum.DataIv = request.DataIv
+	newDatum.DataEncryptionAlgorithm = request.DataEncryptionAlgorithm
 	newDatum.Metadata.LastEdited = startTime
 
 	err = s.database.updateDatum(ctx, &newDatum, request.Id)
@@ -104,6 +106,7 @@ func (s *Server) CreateDatum(ctx context.Context, request *api.CreateDatumReques
 		Title:                   request.Title,
 		Data:                    request.Data.Data,
 		DataEncryptionAlgorithm: request.DataEncryptionAlgorithm,
+		DataIv:                  request.DataIv,
 		Accessors: map[string]accessor{
 			userId: {
 				UserId:      userId,
