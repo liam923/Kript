@@ -1194,7 +1194,7 @@ func (m *RefreshAuthResponse) GetAccessToken() *AccessToken {
 }
 
 type GetUserRequest struct {
-	// The access token to identify and authenticate the user.
+	// The access token to identify and authenticate the user. This is optional.
 	AccessToken *AccessToken `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
 	// An identifier of the user to retrieve.
 	//
