@@ -537,7 +537,7 @@
         "RSA"
       ],
       "default": "UNKNOWN_A_ENCRYPTION_ALGORITHM",
-      "description": "An enumeration of different asymmetric encryption algorithms.\n\n - RSA: Encrypt using AES with a given key."
+      "description": "An enumeration of different asymmetric encryption algorithms.\n\n - RSA: Encrypt/Decrypt using RSA, using OAEP padding."
     },
     "apiAccessToken": {
       "type": "object",
@@ -556,7 +556,7 @@
         },
         "password": {
           "$ref": "#/definitions/apiHString",
-          "description": "The hashed password of the user, with the salt appended to the end of the password."
+          "description": "The hashed password of the user."
         },
         "salt": {
           "type": "string",
@@ -582,6 +582,19 @@
         "private_key_encryption_algorithm": {
           "$ref": "#/definitions/apiSEncryptionAlgorithm",
           "description": "The encryption algorithm used to encrypt the user's private key."
+        },
+        "private_key_iv": {
+          "type": "string",
+          "format": "byte",
+          "description": "The initialization vector used to encrypt the private key."
+        },
+        "private_key_key_salt": {
+          "type": "string",
+          "description": "The salt used in generating the key for encrypting/decrypting the private key."
+        },
+        "private_key_key_hash_algorithm": {
+          "$ref": "#/definitions/apiHashAlgorithm",
+          "description": "The hash algorithm used to generate the key for encrypting/decrypting the private key."
         }
       }
     },
@@ -616,6 +629,11 @@
         "data_encryption_algorithm": {
           "$ref": "#/definitions/apiSEncryptionAlgorithm",
           "description": "The encryption algorithm used to encrypt the actual data."
+        },
+        "data_iv": {
+          "type": "string",
+          "format": "byte",
+          "description": "The initialization vector used to encrypt the data."
         }
       }
     },
@@ -650,6 +668,11 @@
         "data_encryption_algorithm": {
           "$ref": "#/definitions/apiSEncryptionAlgorithm",
           "description": "The encryption algorithm used to encrypt the actual data."
+        },
+        "data_iv": {
+          "type": "string",
+          "format": "byte",
+          "description": "The initialization vector used to encrypt the data."
         },
         "accessors": {
           "type": "object",
@@ -731,10 +754,13 @@
       "type": "string",
       "enum": [
         "UNKNOWN_HASH_ALGORITHM",
-        "SHA_512"
+        "BCRYPT",
+        "SCRYPT",
+        "PBKDF2_SHA_512",
+        "ARGON2"
       ],
       "default": "UNKNOWN_HASH_ALGORITHM",
-      "description": "An enumeration of different password hashing algorithms.\n\n - SHA_512: Concatenate password + salt and use SHA-512."
+      "description": "An enumeration of different password hashing algorithms.\n\n - BCRYPT: Hash the utf-8 encoded password and utf-8 encoded salt using bcrypt with a cost of 10.\n - SCRYPT: Hash the utf-8 encoded password and utf-8 encoded salt using scrypt with N=16384, r=8, p=1, and derived key length = 256 bits\n - PBKDF2_SHA_512: Hash the utf-8 encoded password and utf-8 encoded salt using PBKDF2 with SHA512, 20000 iterations, and a derived key length of 256 bits\n - ARGON2: Hash the utf-8 encoded password and utf-8 encoded salt using Argon2id, with t=75, m=1024, p=1, T=32 (derived key length of 256 bits)."
     },
     "apiJWT": {
       "type": "object",
@@ -759,7 +785,7 @@
         },
         "password": {
           "$ref": "#/definitions/apiHString",
-          "description": "The hashed password of the user, with the salt appended to the end of the password."
+          "description": "The hashed password of the user."
         }
       }
     },
@@ -799,6 +825,19 @@
         "private_key_encryption_algorithm": {
           "$ref": "#/definitions/apiSEncryptionAlgorithm",
           "description": "The encryption algorithm used to encrypt the private key."
+        },
+        "private_key_iv": {
+          "type": "string",
+          "format": "byte",
+          "description": "The initialization vector used to encrypt the private key."
+        },
+        "private_key_key_salt": {
+          "type": "string",
+          "description": "The salt used in generating the key for encrypting/decrypting the private key."
+        },
+        "private_key_key_hash_algorithm": {
+          "$ref": "#/definitions/apiHashAlgorithm",
+          "description": "The hash algorithm used to generate the key for encrypting/decrypting the private key."
         }
       },
       "description": "Private information about a user that is only visible to the user."
@@ -819,7 +858,7 @@
           "format": "byte",
           "description": "The user's public key."
         },
-        "salt": {
+        "password_salt": {
           "type": "string",
           "description": "The salt used to hash the user's password."
         },
@@ -864,10 +903,11 @@
       "type": "string",
       "enum": [
         "UNKNOWN_S_ENCRYPTION_ALGORITHM",
-        "AES"
+        "AES_256_CBC",
+        "AES_256_GCM"
       ],
       "default": "UNKNOWN_S_ENCRYPTION_ALGORITHM",
-      "description": "An enumeration of different symmetric encryption algorithms.\n\n - AES: Encrypt using AES with a given key."
+      "description": "An enumeration of different symmetric encryption algorithms.\n\n - AES_256_CBC: Encrypt using AES-256 with a given key and initialization vector, using CBC and PKCS7 padding. If the key is longer than 256 bits, it is truncated to 256. If it is shorter, it is zero-padded.\n - AES_256_GCM: Encrypt using AES-256 with a given key and initialization vector, using GCM. If the key is longer than 256 bits, it is truncated to 256. If it is shorter, it is zero-padded."
     },
     "apiSendVerificationRequest": {
       "type": "object",
@@ -985,7 +1025,16 @@
         },
         "data": {
           "$ref": "#/definitions/apiESecret",
-          "title": "The new actual data of the datum, such as a password or code, encrypted.\nThis should decrypt to a string of a json object. (Optional)"
+          "description": "The new actual data of the datum, such as a password or code, encrypted.\nThis should decrypt to a string of a json object."
+        },
+        "data_encryption_algorithm": {
+          "$ref": "#/definitions/apiSEncryptionAlgorithm",
+          "description": "The new encryption algorithm used to encrypt the actual data."
+        },
+        "data_iv": {
+          "type": "string",
+          "format": "byte",
+          "description": "The new initialization vector used to encrypt the data."
         }
       }
     },
@@ -1007,11 +1056,11 @@
         },
         "old_password": {
           "$ref": "#/definitions/apiHString",
-          "description": "The old hashed password of the user, with the salt appended to the end of the password."
+          "description": "The old hashed password of the user."
         },
         "new_password": {
           "$ref": "#/definitions/apiHString",
-          "description": "The new hashed password of the user, with the salt appended to the end of the password."
+          "description": "The new hashed password of the user."
         },
         "new_salt": {
           "type": "string",
@@ -1028,6 +1077,19 @@
         "private_key_encryption_algorithm": {
           "$ref": "#/definitions/apiSEncryptionAlgorithm",
           "description": "The encryption algorithm used to encrypt the user's private key."
+        },
+        "private_key_iv": {
+          "type": "string",
+          "format": "byte",
+          "description": "The initialization vector used to encrypt the private key."
+        },
+        "private_key_key_salt": {
+          "type": "string",
+          "description": "The new salt used in generating the key for encrypting/decrypting the private key."
+        },
+        "private_key_key_hash_algorithm": {
+          "$ref": "#/definitions/apiHashAlgorithm",
+          "description": "The new hash algorithm used to generate the key for encrypting/decrypting the private key."
         }
       }
     },

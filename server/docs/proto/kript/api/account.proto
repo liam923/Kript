@@ -26,7 +26,7 @@ message PublicUser {
   // The user's public key.
   bytes public_key = 3;
   // The salt used to hash the user's password.
-  string salt = 4;
+  string password_salt = 4;
   // The hashing algorithm used to hash the user's password.
   HashAlgorithm password_hash_algorithm = 5;
   // The encryption algorithm used to encrypt the user's data keys.
@@ -39,6 +39,12 @@ message PrivateUser {
   EBytes private_key = 1;
   // The encryption algorithm used to encrypt the private key.
   SEncryptionAlgorithm private_key_encryption_algorithm = 2;
+  // The initialization vector used to encrypt the private key.
+  bytes private_key_iv = 3;
+  // The salt used in generating the key for encrypting/decrypting the private key.
+  string private_key_key_salt = 4;
+  // The hash algorithm used to generate the key for encrypting/decrypting the private key.
+  HashAlgorithm private_key_key_hash_algorithm = 5;
 }
 
 // The public and private information about a user.
@@ -154,7 +160,7 @@ message LoginUserRequest {
     // The id of the user.
     string user_id = 2;
   }
-  // The hashed password of the user, with the salt appended to the end of the password.
+  // The hashed password of the user.
   HString password = 3;
 }
 
@@ -210,9 +216,9 @@ message VerifyUserResponse {
 message UpdatePasswordRequest {
   // The access token to identify and authenticate the user.
   AccessToken access_token = 1;
-  // The old hashed password of the user, with the salt appended to the end of the password.
+  // The old hashed password of the user.
   HString old_password = 2;
-  // The new hashed password of the user, with the salt appended to the end of the password.
+  // The new hashed password of the user.
   HString new_password = 3;
   // The salt used in the new hashed password.
   string new_salt = 4;
@@ -222,6 +228,12 @@ message UpdatePasswordRequest {
   EBytes private_key = 6;
   // The encryption algorithm used to encrypt the user's private key.
   SEncryptionAlgorithm private_key_encryption_algorithm = 7;
+  // The initialization vector used to encrypt the private key.
+  bytes private_key_iv = 8;
+  // The new salt used in generating the key for encrypting/decrypting the private key.
+  string private_key_key_salt = 9;
+  // The new hash algorithm used to generate the key for encrypting/decrypting the private key.
+  HashAlgorithm private_key_key_hash_algorithm = 10;
 }
 
 message UpdatePasswordResponse {
@@ -232,7 +244,7 @@ message UpdatePasswordResponse {
 message CreateAccountRequest {
   // The username of the user.
   string username = 1;
-  // The hashed password of the user, with the salt appended to the end of the password.
+  // The hashed password of the user.
   HString password = 2;
   // The salt used in the new hashed password.
   string salt = 3;
@@ -246,6 +258,12 @@ message CreateAccountRequest {
   AEncryptionAlgorithm data_encryption_algorithm = 7;
   // The encryption algorithm used to encrypt the user's private key.
   SEncryptionAlgorithm private_key_encryption_algorithm = 8;
+  // The initialization vector used to encrypt the private key.
+  bytes private_key_iv = 9;
+  // The salt used in generating the key for encrypting/decrypting the private key.
+  string private_key_key_salt = 10;
+  // The hash algorithm used to generate the key for encrypting/decrypting the private key.
+  HashAlgorithm private_key_key_hash_algorithm = 11;
 }
 
 message CreateAccountResponse {

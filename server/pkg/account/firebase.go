@@ -22,6 +22,9 @@ type keys struct {
 	PublicKey                     []byte                   `firestore:"publicKey,omitempty"`
 	PrivateKey                    []byte                   `firestore:"privateKey,omitempty"`
 	PrivateKeyEncryptionAlgorithm api.SEncryptionAlgorithm `firestore:"privateKeyEncryptionAlgorithm,omitempty"`
+	PrivateKeyIv                  []byte                   `firestore:"privateKeyIv,omitempty"`
+	PrivateKeyKeySalt             string                   `firestore:"privateKeyKeySalt,omitempty"`
+	PrivateKeyKeyHashAlgorithm    api.HashAlgorithm        `firestore:"privateKeyKeyHashAlgorithm,omitempty"`
 	DataEncryptionAlgorithm       api.AEncryptionAlgorithm `firestore:"dataEncryptionAlgorithm,omitempty"`
 }
 
@@ -44,6 +47,9 @@ func (u user) toApiUser(id string, includePrivate bool) *api.User {
 		private = &api.PrivateUser{
 			PrivateKey:                    &api.EBytes{Data: u.Keys.PrivateKey},
 			PrivateKeyEncryptionAlgorithm: u.Keys.PrivateKeyEncryptionAlgorithm,
+			PrivateKeyIv:                  u.Keys.PrivateKeyIv,
+			PrivateKeyKeySalt:             u.Keys.PrivateKeyKeySalt,
+			PrivateKeyKeyHashAlgorithm:    u.Keys.PrivateKeyKeyHashAlgorithm,
 		}
 	}
 
@@ -51,7 +57,7 @@ func (u user) toApiUser(id string, includePrivate bool) *api.User {
 		Id:                      id,
 		Username:                u.Username,
 		PublicKey:               u.Keys.PublicKey,
-		Salt:                    u.Password.Salt,
+		PasswordSalt:            u.Password.Salt,
 		PasswordHashAlgorithm:   u.Password.HashAlgorithm,
 		DataEncryptionAlgorithm: u.Keys.DataEncryptionAlgorithm,
 	}

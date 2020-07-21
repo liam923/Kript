@@ -29,11 +29,13 @@ message Datum {
   ESecret data = 4;
   // The encryption algorithm used to encrypt the actual data.
   SEncryptionAlgorithm data_encryption_algorithm = 5;
+  // The initialization vector used to encrypt the data.
+  bytes data_iv = 6;
   // A map of ids of users who have access to this datum to information on what
   // permissions they have. This does not include the owner, who has all permissions.
-  map<string, Access> accessors = 6;
+  map<string, Access> accessors = 7;
   // The metadata associated with this datum.
-  Metadata metadata = 7;
+  Metadata metadata = 8;
 
   // An object representing relevant data to a user who has access to this
   // datum.
@@ -154,8 +156,12 @@ message UpdateDatumRequest {
   // The new title of the datum. (Optional)
   string title = 3;
   // The new actual data of the datum, such as a password or code, encrypted.
-  // This should decrypt to a string of a json object. (Optional)
+  // This should decrypt to a string of a json object.
   ESecret data = 4;
+  // The new encryption algorithm used to encrypt the actual data.
+  SEncryptionAlgorithm data_encryption_algorithm = 5;
+  // The new initialization vector used to encrypt the data.
+  bytes data_iv = 6;
 }
 
 message UpdateDatumResponse {
@@ -176,6 +182,8 @@ message CreateDatumRequest {
   EBytes data_key = 5;
   // The encryption algorithm used to encrypt the actual data.
   SEncryptionAlgorithm data_encryption_algorithm = 6;
+  // The initialization vector used to encrypt the data.
+  bytes data_iv = 7;
 }
 
 message CreateDatumResponse {
