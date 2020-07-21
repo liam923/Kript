@@ -71,6 +71,8 @@ func TestGetUser(t *testing.T) {
 		user *user
 		// The user id of the requested user
 		userId string
+		// Whether or not this request is being made anonymously.
+		anonymous bool
 	}{
 		// Successful gets of different users
 		{
@@ -88,6 +90,24 @@ func TestGetUser(t *testing.T) {
 			isSelf:         false,
 			user:           user2,
 			userId:         userId2,
+		},
+		{
+			testName:       "get diff id",
+			userIdentifier: userId2,
+			isUsernameType: false,
+			isSelf:         false,
+			user:           user2,
+			userId:         userId2,
+			anonymous:      true,
+		},
+		{
+			testName:       "get diff username",
+			userIdentifier: user2.Username,
+			isUsernameType: true,
+			isSelf:         false,
+			user:           user2,
+			userId:         userId2,
+			anonymous:      true,
 		},
 		// Successful gets of the logged in user
 		{
@@ -137,7 +157,6 @@ func TestGetUser(t *testing.T) {
 					call.Return(tt.user, tt.userId, nil)
 				}
 				request = &api.GetUserRequest{
-					AccessToken:    &api.AccessToken{Jwt: &api.JWT{Token: validToken}},
 					UserIdentifier: &api.GetUserRequest_Username{Username: tt.userIdentifier},
 				}
 				for _, invalidToken := range invalidTokens {
@@ -154,7 +173,6 @@ func TestGetUser(t *testing.T) {
 					call.Return(tt.user, nil)
 				}
 				request = &api.GetUserRequest{
-					AccessToken:    &api.AccessToken{Jwt: &api.JWT{Token: validToken}},
 					UserIdentifier: &api.GetUserRequest_UserId{UserId: tt.userIdentifier},
 				}
 				for _, invalidToken := range invalidTokens {
@@ -163,6 +181,9 @@ func TestGetUser(t *testing.T) {
 						UserIdentifier: &api.GetUserRequest_UserId{UserId: tt.userIdentifier},
 					})
 				}
+			}
+			if !tt.anonymous {
+				request.AccessToken = &api.AccessToken{Jwt: &api.JWT{Token: validToken}}
 			}
 
 			response, err := server.GetUser(context.Background(), request)
@@ -181,9 +202,10 @@ func TestGetUser(t *testing.T) {
 					expectedUser.Public.PublicKey != response.User.Public.PublicKey ||
 					expectedUser.Public.PasswordHashAlgorithm != response.User.Public.PasswordHashAlgorithm ||
 					expectedUser.Public.Salt != response.User.Public.Salt ||
-					expectedUser.Private.PrivateKey != response.User.Private.PrivateKey ||
-					expectedUser.Private.PrivateKeyEncryptionAlgorithm != response.User.Private.PrivateKeyEncryptionAlgorithm {
-					t.Errorf("invalid user returned: %v", response.User)
+					(expectedUser.Private == nil && response.User.Private != nil) ||
+					(expectedUser.Private != nil && (expectedUser.Private.PrivateKey != response.User.Private.PrivateKey ||
+						expectedUser.Private.PrivateKeyEncryptionAlgorithm != response.User.Private.PrivateKeyEncryptionAlgorithm)) {
+					t.Errorf("invalid user returned: %v, expected: %v", response.User, expectedUser)
 				}
 			}
 

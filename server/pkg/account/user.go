@@ -8,12 +8,17 @@ import (
 )
 
 func (s *Server) GetUser(ctx context.Context, request *api.GetUserRequest) (response *api.GetUserResponse, err error) {
-	if request == nil || !s.validateAccessTokenFormat(request.AccessToken) {
+	if request == nil || (request.AccessToken != nil && !s.validateAccessTokenFormat(request.AccessToken)) {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
-	loggedInUserId, err := s.loginUserWithAccessToken(*request.AccessToken)
-	if err != nil {
-		return nil, err
+
+	var loggedInUserId *string
+	if request.AccessToken != nil {
+		loggedInUserIdRaw, err := s.loginUserWithAccessToken(*request.AccessToken)
+		if err != nil {
+			return nil, err
+		}
+		loggedInUserId = &loggedInUserIdRaw
 	}
 
 	userId := ""
@@ -33,7 +38,7 @@ func (s *Server) GetUser(ctx context.Context, request *api.GetUserRequest) (resp
 		return nil, err
 	}
 
-	apiUser := user.toApiUser(userId, userId == loggedInUserId)
+	apiUser := user.toApiUser(userId, loggedInUserId != nil && userId == *loggedInUserId)
 	return &api.GetUserResponse{
 		User: apiUser,
 	}, nil

@@ -263,7 +263,7 @@ message RefreshAuthResponse {
 }
 
 message GetUserRequest {
-  // The access token to identify and authenticate the user.
+  // The access token to identify and authenticate the user. This is optional.
   AccessToken access_token = 1;
   // An identifier of the user to retrieve.
   oneof user_identifier {

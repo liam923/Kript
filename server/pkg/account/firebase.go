@@ -39,7 +39,7 @@ type user struct {
 }
 
 func (u user) toApiUser(id string, includePrivate bool) *api.User {
-	private := &api.PrivateUser{}
+	var private *api.PrivateUser
 	if includePrivate {
 		private = &api.PrivateUser{
 			PrivateKey:                    u.Keys.PrivateKey,
