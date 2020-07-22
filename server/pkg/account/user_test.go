@@ -1,6 +1,7 @@
 package account
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/golang/mock/gomock"
@@ -23,13 +24,13 @@ func TestGetUser(t *testing.T) {
 	user1 := &user{
 		Username: "liam923",
 		Password: password{
-			Hash:          "hash",
+			Hash:          []byte("hash"),
 			Salt:          "salt",
 			HashAlgorithm: 0,
 		},
 		Keys: keys{
-			PublicKey:                     "public",
-			PrivateKey:                    "private",
+			PublicKey:                     []byte("public"),
+			PrivateKey:                    []byte("private"),
 			PrivateKeyEncryptionAlgorithm: 0,
 			DataEncryptionAlgorithm:       0,
 		},
@@ -39,13 +40,13 @@ func TestGetUser(t *testing.T) {
 	user2 := &user{
 		Username: "otherdude",
 		Password: password{
-			Hash:          "hashed",
+			Hash:          []byte("hashed"),
 			Salt:          "salty",
 			HashAlgorithm: 0,
 		},
 		Keys: keys{
-			PublicKey:                     "publickey",
-			PrivateKey:                    "privatekey",
+			PublicKey:                     []byte("publickey"),
+			PrivateKey:                    []byte("privatekey"),
 			PrivateKeyEncryptionAlgorithm: 0,
 			DataEncryptionAlgorithm:       0,
 		},
@@ -199,11 +200,11 @@ func TestGetUser(t *testing.T) {
 				if expectedUser.Public.Username != response.User.Public.Username ||
 					expectedUser.Public.Id != response.User.Public.Id ||
 					expectedUser.Public.DataEncryptionAlgorithm != response.User.Public.DataEncryptionAlgorithm ||
-					expectedUser.Public.PublicKey != response.User.Public.PublicKey ||
+					bytes.Compare(expectedUser.Public.PublicKey, response.User.Public.PublicKey) != 0 ||
 					expectedUser.Public.PasswordHashAlgorithm != response.User.Public.PasswordHashAlgorithm ||
 					expectedUser.Public.Salt != response.User.Public.Salt ||
 					(expectedUser.Private == nil && response.User.Private != nil) ||
-					(expectedUser.Private != nil && (expectedUser.Private.PrivateKey != response.User.Private.PrivateKey ||
+					(expectedUser.Private != nil && (bytes.Compare(expectedUser.Private.PrivateKey.Data, response.User.Private.PrivateKey.Data) != 0 ||
 						expectedUser.Private.PrivateKeyEncryptionAlgorithm != response.User.Private.PrivateKeyEncryptionAlgorithm)) {
 					t.Errorf("invalid user returned: %v, expected: %v", response.User, expectedUser)
 				}

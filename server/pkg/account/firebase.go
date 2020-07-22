@@ -13,14 +13,14 @@ import (
 const firestoreTag = "firestore"
 
 type password struct {
-	Hash          string            `firestore:"hash,omitempty"`
+	Hash          []byte            `firestore:"hash,omitempty"`
 	Salt          string            `firestore:"salt,omitempty"`
 	HashAlgorithm api.HashAlgorithm `firestore:"hashAlgorithm,omitempty"`
 }
 
 type keys struct {
-	PublicKey                     string                   `firestore:"publicKey,omitempty"`
-	PrivateKey                    string                   `firestore:"privateKey,omitempty"`
+	PublicKey                     []byte                   `firestore:"publicKey,omitempty"`
+	PrivateKey                    []byte                   `firestore:"privateKey,omitempty"`
 	PrivateKeyEncryptionAlgorithm api.SEncryptionAlgorithm `firestore:"privateKeyEncryptionAlgorithm,omitempty"`
 	DataEncryptionAlgorithm       api.AEncryptionAlgorithm `firestore:"dataEncryptionAlgorithm,omitempty"`
 }
@@ -42,7 +42,7 @@ func (u user) toApiUser(id string, includePrivate bool) *api.User {
 	var private *api.PrivateUser
 	if includePrivate {
 		private = &api.PrivateUser{
-			PrivateKey:                    u.Keys.PrivateKey,
+			PrivateKey:                    &api.EBytes{Data: u.Keys.PrivateKey},
 			PrivateKeyEncryptionAlgorithm: u.Keys.PrivateKeyEncryptionAlgorithm,
 		}
 	}

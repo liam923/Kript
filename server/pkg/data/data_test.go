@@ -1,6 +1,7 @@
 package data
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/golang/mock/gomock"
@@ -74,12 +75,12 @@ func TestGetData(t *testing.T) {
 					datum: datum{
 						Owner:                   "liam923",
 						Title:                   "DATA",
-						Data:                    "23dyoirbeu9",
+						Data:                    []byte("23dyoirbeu9"),
 						DataEncryptionAlgorithm: 0,
 						Accessors: map[string]accessor{
 							"liam923": {
 								UserId:      "liam923",
-								DataKey:     "a0iojcdopi",
+								DataKey:     []byte("a0iojcdopi"),
 								Permissions: []api.Permission{api.Permission_ADMIN},
 							},
 						},
@@ -92,17 +93,17 @@ func TestGetData(t *testing.T) {
 					datum: datum{
 						Owner:                   "other person",
 						Title:                   "TITLE",
-						Data:                    "saofinfwuoirc",
+						Data:                    []byte("saofinfwuoirc"),
 						DataEncryptionAlgorithm: 0,
 						Accessors: map[string]accessor{
 							"other person": {
 								UserId:      "other person",
-								DataKey:     "23ewionpwje",
+								DataKey:     []byte("23ewionpwje"),
 								Permissions: []api.Permission{api.Permission_ADMIN},
 							},
 							"liam923": {
 								UserId:      "liam923",
-								DataKey:     "23idjoqnwuiacjs",
+								DataKey:     []byte("23idjoqnwuiacjs"),
 								Permissions: []api.Permission{api.Permission_READ},
 							},
 						},
@@ -124,12 +125,12 @@ func TestGetData(t *testing.T) {
 						Datum: datum{
 							Owner:                   "liam923",
 							Title:                   "DATA",
-							Data:                    "23dyoirbeu9",
+							Data:                    []byte("23dyoirbeu9"),
 							DataEncryptionAlgorithm: 0,
 							Accessors: map[string]accessor{
 								"liam923": {
 									UserId:      "liam923",
-									DataKey:     "a0iojcdopi",
+									DataKey:     []byte("a0iojcdopi"),
 									Permissions: []api.Permission{api.Permission_ADMIN},
 								},
 							},
@@ -141,22 +142,22 @@ func TestGetData(t *testing.T) {
 						Datum: datum{
 							Owner:                   "other person",
 							Title:                   "TITLE",
-							Data:                    "saofinfwuoirc",
+							Data:                    []byte("saofinfwuoirc"),
 							DataEncryptionAlgorithm: 0,
 							Accessors: map[string]accessor{
 								"other person": {
 									UserId:      "other person",
-									DataKey:     "23ewionpwje",
+									DataKey:     []byte("23ewionpwje"),
 									Permissions: []api.Permission{api.Permission_ADMIN},
 								},
 								"liam923": {
 									UserId:      "liam923",
-									DataKey:     "23idjoqnwuiacjs",
+									DataKey:     []byte("23idjoqnwuiacjs"),
 									Permissions: []api.Permission{api.Permission_READ},
 								},
 								"third person": {
 									UserId:      "third person",
-									DataKey:     "29huawosincd",
+									DataKey:     []byte("29huawosincd"),
 									Permissions: []api.Permission{api.Permission_SHARE},
 								},
 							},
@@ -177,12 +178,12 @@ func TestGetData(t *testing.T) {
 					datum: datum{
 						Owner:                   "liam923",
 						Title:                   "DATA",
-						Data:                    "23dyoirbeu9",
+						Data:                    []byte("23dyoirbeu9"),
 						DataEncryptionAlgorithm: 0,
 						Accessors: map[string]accessor{
 							"liam923": {
 								UserId:      "liam923",
-								DataKey:     "a0iojcdopi",
+								DataKey:     []byte("a0iojcdopi"),
 								Permissions: []api.Permission{api.Permission_ADMIN},
 							},
 						},
@@ -216,12 +217,12 @@ func TestGetData(t *testing.T) {
 					datum: datum{
 						Owner:                   "liam923",
 						Title:                   "DATA",
-						Data:                    "23dyoirbeu9",
+						Data:                    []byte("23dyoirbeu9"),
 						DataEncryptionAlgorithm: 0,
 						Accessors: map[string]accessor{
 							"liam923": {
 								UserId:      "liam923",
-								DataKey:     "a0iojcdopi",
+								DataKey:     []byte("a0iojcdopi"),
 								Permissions: []api.Permission{api.Permission_ADMIN},
 							},
 						},
@@ -234,17 +235,17 @@ func TestGetData(t *testing.T) {
 					datum: datum{
 						Owner:                   "other person",
 						Title:                   "TITLE",
-						Data:                    "saofinfwuoirc",
+						Data:                    []byte("saofinfwuoirc"),
 						DataEncryptionAlgorithm: 0,
 						Accessors: map[string]accessor{
 							"third party": {
 								UserId:      "third party",
-								DataKey:     "23idjoqnwuiacjs",
+								DataKey:     []byte("23idjoqnwuiacjs"),
 								Permissions: []api.Permission{api.Permission_READ},
 							},
 							"other person": {
 								UserId:      "other person",
-								DataKey:     "23ewionpwje",
+								DataKey:     []byte("23ewionpwje"),
 								Permissions: []api.Permission{api.Permission_ADMIN},
 							},
 						},
@@ -298,7 +299,7 @@ func TestGetData(t *testing.T) {
 					expected := data[i].Datum
 					if expectedId != actual.Id ||
 						expected.Owner != actual.Owner ||
-						expected.Data != actual.Data ||
+						bytes.Compare(expected.Data, actual.Data.Data) != 0 ||
 						expected.DataEncryptionAlgorithm != actual.DataEncryptionAlgorithm ||
 						expected.Title != actual.Title ||
 						len(expected.Accessors) != len(actual.Accessors) {
@@ -357,7 +358,7 @@ type partialDatumMatcher struct {
 func (p partialDatumMatcher) Matches(x interface{}) bool {
 	if q, ok := x.(*datum); ok {
 		return p.datum.Title == q.Title &&
-			p.datum.Data == q.Data &&
+			bytes.Compare(p.datum.Data, q.Data) == 0 &&
 			len(p.datum.Accessors) == len(q.Accessors) &&
 			p.datum.Owner == q.Owner
 	}
@@ -395,7 +396,7 @@ func TestUpdateDatum(t *testing.T) {
 			request: api.UpdateDatumRequest{
 				Id:    "1",
 				Title: "new title",
-				Data:  "new data",
+				Data:  &api.ESecret{Data: []byte("new data")},
 			},
 			err: nil,
 			fetchDatum: fetchDatum{
@@ -403,12 +404,12 @@ func TestUpdateDatum(t *testing.T) {
 				datum: datum{
 					Owner:                   "liam923",
 					Title:                   "DATA",
-					Data:                    "23dyoirbeu9",
+					Data:                    []byte("23dyoirbeu9"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
 						"liam923": {
 							UserId:      "liam923",
-							DataKey:     "a0iojcdopi",
+							DataKey:     []byte("a0iojcdopi"),
 							Permissions: []api.Permission{api.Permission_ADMIN},
 						},
 					},
@@ -422,7 +423,7 @@ func TestUpdateDatum(t *testing.T) {
 			request: api.UpdateDatumRequest{
 				Id:    "1",
 				Title: "new title",
-				Data:  "new data",
+				Data:  &api.ESecret{Data: []byte("new data")},
 			},
 			err: status.Error(codes.Internal, "error"),
 			fetchDatum: fetchDatum{
@@ -436,7 +437,7 @@ func TestUpdateDatum(t *testing.T) {
 			request: api.UpdateDatumRequest{
 				Id:    "2",
 				Title: "new title",
-				Data:  "new data",
+				Data:  &api.ESecret{Data: []byte("new data")},
 			},
 			err: status.Errorf(codes.PermissionDenied, "write access denied for datum 2"),
 			fetchDatum: fetchDatum{
@@ -444,17 +445,17 @@ func TestUpdateDatum(t *testing.T) {
 				datum: datum{
 					Owner:                   "other person",
 					Title:                   "TITLE",
-					Data:                    "saofinfwuoirc",
+					Data:                    []byte("saofinfwuoirc"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
 						"third party": {
 							UserId:      "third party",
-							DataKey:     "23idjoqnwuiacjs",
+							DataKey:     []byte("23idjoqnwuiacjs"),
 							Permissions: []api.Permission{api.Permission_READ},
 						},
 						"other person": {
 							UserId:      "other person",
-							DataKey:     "23ewionpwje",
+							DataKey:     []byte("23ewionpwje"),
 							Permissions: []api.Permission{api.Permission_ADMIN},
 						},
 					},
@@ -468,7 +469,7 @@ func TestUpdateDatum(t *testing.T) {
 			request: api.UpdateDatumRequest{
 				Id:    "2",
 				Title: "new title",
-				Data:  "new data",
+				Data:  &api.ESecret{Data: []byte("new data")},
 			},
 			err: status.Errorf(codes.PermissionDenied, "write access denied for datum 2"),
 			fetchDatum: fetchDatum{
@@ -476,17 +477,17 @@ func TestUpdateDatum(t *testing.T) {
 				datum: datum{
 					Owner:                   "liam923",
 					Title:                   "TITLE",
-					Data:                    "saofinfwuoirc",
+					Data:                    []byte("saofinfwuoirc"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
 						"liam923": {
 							UserId:      "liam923",
-							DataKey:     "a0iojcdopi",
+							DataKey:     []byte("a0iojcdopi"),
 							Permissions: []api.Permission{api.Permission_ADMIN},
 						},
 						"third party": {
 							UserId:      "third party",
-							DataKey:     "23idjoqnwuiacjs",
+							DataKey:     []byte("23idjoqnwuiacjs"),
 							Permissions: []api.Permission{api.Permission_READ},
 						},
 					},
@@ -508,7 +509,7 @@ func TestUpdateDatum(t *testing.T) {
 			if tt.fetchDatum.err == nil {
 				expectedDatum := tt.fetchDatum.datum
 				expectedDatum.Title = tt.request.Title
-				expectedDatum.Data = tt.request.Data
+				expectedDatum.Data = tt.request.Data.Data
 				db.EXPECT().
 					updateDatum(context.Background(), partialDatumMatcher{datum: expectedDatum}, tt.fetchDatum.id).
 					Return(tt.updateErr)
@@ -533,7 +534,7 @@ func TestUpdateDatum(t *testing.T) {
 				actual := response.Datum
 				if expectedId != actual.Id ||
 					expected.Owner != actual.Owner ||
-					tt.request.Data != actual.Data ||
+					bytes.Compare(tt.request.Data.Data, actual.Data.Data) != 0 ||
 					expected.DataEncryptionAlgorithm != actual.DataEncryptionAlgorithm ||
 					tt.request.Title != actual.Title ||
 					len(expected.Accessors) != len(actual.Accessors) {
@@ -563,6 +564,9 @@ func TestUpdateDatum(t *testing.T) {
 		nil,
 		{
 			AccessToken: nil,
+		},
+		{
+			AccessToken: &api.AccessToken{Jwt: &api.JWT{Token: ""}},
 		},
 	}
 	t.Run("invalid requests", func(t *testing.T) {
@@ -605,12 +609,12 @@ func TestCreateDatum(t *testing.T) {
 			datum: datum{
 				Owner:                   "liam923",
 				Title:                   "TITLE",
-				Data:                    "DATA",
+				Data:                    []byte("DATA"),
 				DataEncryptionAlgorithm: 0,
 				Accessors: map[string]accessor{
 					"liam923": {
 						UserId:      "liam923",
-						DataKey:     "DATA KEY",
+						DataKey:     []byte("DATA KEY"),
 						Permissions: []api.Permission{api.Permission_ADMIN},
 					},
 				},
@@ -625,12 +629,12 @@ func TestCreateDatum(t *testing.T) {
 			datum: datum{
 				Owner:                   "liam923",
 				Title:                   "TITLE",
-				Data:                    "DATA",
+				Data:                    []byte("DATA"),
 				DataEncryptionAlgorithm: 0,
 				Accessors: map[string]accessor{
 					"liam923": {
 						UserId:      "liam923",
-						DataKey:     "DATA KEY",
+						DataKey:     []byte("DATA KEY"),
 						Permissions: []api.Permission{api.Permission_ADMIN},
 					},
 				},
@@ -653,7 +657,8 @@ func TestCreateDatum(t *testing.T) {
 					Jwt: &api.JWT{Token: validToken},
 				},
 				Title:                   tt.datum.Title,
-				Data:                    tt.datum.Data,
+				Data:                    &api.ESecret{Data: tt.datum.Data},
+				DataKey:                 &api.EBytes{Data: tt.datum.Accessors["liam923"].DataKey},
 				DataEncryptionAlgorithm: tt.datum.DataEncryptionAlgorithm,
 			}
 
@@ -664,14 +669,14 @@ func TestCreateDatum(t *testing.T) {
 
 			if tt.createResponse.err == nil {
 				if response == nil {
-					t.Errorf("unexpected response: %v", response)
+					t.Errorf("unexpected response: %v, got err: %v", response, err)
 				}
 				expectedId := tt.createResponse.id
 				expected := tt.datum
 				actual := response.Datum
 				if expectedId != actual.Id ||
 					expected.Owner != actual.Owner ||
-					expected.Data != actual.Data ||
+					bytes.Compare(expected.Data, actual.Data.Data) != 0 ||
 					expected.DataEncryptionAlgorithm != actual.DataEncryptionAlgorithm ||
 					expected.Title != actual.Title ||
 					len(expected.Accessors) != len(actual.Accessors) {
@@ -685,7 +690,8 @@ func TestCreateDatum(t *testing.T) {
 						Jwt: &api.JWT{Token: invalidToken},
 					},
 					Title:                   tt.datum.Title,
-					Data:                    tt.datum.Data,
+					Data:                    &api.ESecret{Data: tt.datum.Data},
+					DataKey:                 &api.EBytes{Data: tt.datum.Accessors["liam923"].DataKey},
 					DataEncryptionAlgorithm: tt.datum.DataEncryptionAlgorithm,
 				}
 				response, err := server.CreateDatum(context.Background(), &request)
@@ -705,6 +711,21 @@ func TestCreateDatum(t *testing.T) {
 		nil,
 		{
 			AccessToken: nil,
+		},
+		{
+			AccessToken: &api.AccessToken{Jwt: &api.JWT{Token: ""}},
+			DataKey:     nil,
+			Data:        nil,
+		},
+		{
+			AccessToken: &api.AccessToken{Jwt: &api.JWT{Token: ""}},
+			DataKey:     &api.EBytes{},
+			Data:        nil,
+		},
+		{
+			AccessToken: &api.AccessToken{Jwt: &api.JWT{Token: ""}},
+			DataKey:     nil,
+			Data:        &api.ESecret{},
 		},
 	}
 	t.Run("invalid requests", func(t *testing.T) {
@@ -753,12 +774,12 @@ func TestDeleteDatum(t *testing.T) {
 				datum: datum{
 					Owner:                   "liam923",
 					Title:                   "DATA",
-					Data:                    "23dyoirbeu9",
+					Data:                    []byte("23dyoirbeu9"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
 						"liam923": {
 							UserId:      "liam923",
-							DataKey:     "a0iojcdopi",
+							DataKey:     []byte("a0iojcdopi"),
 							Permissions: []api.Permission{api.Permission_ADMIN},
 						},
 					},
@@ -785,17 +806,17 @@ func TestDeleteDatum(t *testing.T) {
 				datum: datum{
 					Owner:                   "other person",
 					Title:                   "TITLE",
-					Data:                    "saofinfwuoirc",
+					Data:                    []byte("saofinfwuoirc"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
 						"third party": {
 							UserId:      "third party",
-							DataKey:     "23idjoqnwuiacjs",
+							DataKey:     []byte("23idjoqnwuiacjs"),
 							Permissions: []api.Permission{api.Permission_READ},
 						},
 						"other person": {
 							UserId:      "other person",
-							DataKey:     "23ewionpwje",
+							DataKey:     []byte("23ewionpwje"),
 							Permissions: []api.Permission{api.Permission_ADMIN},
 						},
 					},
@@ -838,7 +859,7 @@ func TestDeleteDatum(t *testing.T) {
 				actual := response.Datum
 				if expectedId != actual.Id ||
 					expected.Owner != actual.Owner ||
-					expected.Data != actual.Data ||
+					bytes.Compare(expected.Data, actual.Data.Data) != 0 ||
 					expected.DataEncryptionAlgorithm != actual.DataEncryptionAlgorithm ||
 					expected.Title != actual.Title ||
 					len(expected.Accessors) != len(actual.Accessors) {
@@ -914,7 +935,7 @@ func TestShareDatum(t *testing.T) {
 			request: api.ShareDatumRequest{
 				Id:          "1",
 				TargetId:    "friend",
-				DataKey:     "234567890",
+				DataKey:     &api.EBytes{Data: []byte("234567890")},
 				Permissions: []api.Permission{api.Permission_READ, api.Permission_SHARE},
 			},
 			err: nil,
@@ -923,12 +944,12 @@ func TestShareDatum(t *testing.T) {
 				datum: datum{
 					Owner:                   "liam923",
 					Title:                   "DATA",
-					Data:                    "23dyoirbeu9",
+					Data:                    []byte("23dyoirbeu9"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
 						"liam923": {
 							UserId:      "liam923",
-							DataKey:     "a0iojcdopi",
+							DataKey:     []byte("a0iojcdopi"),
 							Permissions: []api.Permission{api.Permission_ADMIN},
 						},
 					},
@@ -943,7 +964,7 @@ func TestShareDatum(t *testing.T) {
 			request: api.ShareDatumRequest{
 				Id:          "1",
 				TargetId:    "friend",
-				DataKey:     "234567890",
+				DataKey:     &api.EBytes{Data: []byte("234567890")},
 				Permissions: []api.Permission{api.Permission_READ, api.Permission_SHARE},
 			},
 			err: nil,
@@ -952,17 +973,17 @@ func TestShareDatum(t *testing.T) {
 				datum: datum{
 					Owner:                   "liam923",
 					Title:                   "DATA",
-					Data:                    "23dyoirbeu9",
+					Data:                    []byte("23dyoirbeu9"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
 						"friend": {
 							UserId:      "friend",
-							DataKey:     "adhuo289uo",
+							DataKey:     []byte("adhuo289uo"),
 							Permissions: []api.Permission{api.Permission_READ},
 						},
 						"liam923": {
 							UserId:      "liam923",
-							DataKey:     "a0iojcdopi",
+							DataKey:     []byte("a0iojcdopi"),
 							Permissions: []api.Permission{api.Permission_ADMIN},
 						},
 					},
@@ -977,7 +998,7 @@ func TestShareDatum(t *testing.T) {
 			request: api.ShareDatumRequest{
 				Id:          "1",
 				TargetId:    "third party",
-				DataKey:     "234567890",
+				DataKey:     &api.EBytes{Data: []byte("234567890")},
 				Permissions: []api.Permission{api.Permission_READ, api.Permission_DELETE},
 			},
 			err: nil,
@@ -986,17 +1007,17 @@ func TestShareDatum(t *testing.T) {
 				datum: datum{
 					Owner:                   "friend",
 					Title:                   "DATA",
-					Data:                    "23dyoirbeu9",
+					Data:                    []byte("23dyoirbeu9"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
 						"liam923": {
 							UserId:      "liam923",
-							DataKey:     "adhuo289uo",
+							DataKey:     []byte("adhuo289uo"),
 							Permissions: []api.Permission{api.Permission_READ, api.Permission_DELETE, api.Permission_SHARE},
 						},
 						"friend": {
 							UserId:      "friend",
-							DataKey:     "a0iojcdopi",
+							DataKey:     []byte("a0iojcdopi"),
 							Permissions: []api.Permission{api.Permission_ADMIN},
 						},
 					},
@@ -1011,7 +1032,7 @@ func TestShareDatum(t *testing.T) {
 			request: api.ShareDatumRequest{
 				Id:          "1",
 				TargetId:    "friend",
-				DataKey:     "234567890",
+				DataKey:     &api.EBytes{Data: []byte("234567890")},
 				Permissions: []api.Permission{api.Permission_READ, api.Permission_SHARE},
 			},
 			err: status.Error(codes.Internal, "error"),
@@ -1026,7 +1047,7 @@ func TestShareDatum(t *testing.T) {
 			request: api.ShareDatumRequest{
 				Id:          "2",
 				TargetId:    "friend",
-				DataKey:     "234567890",
+				DataKey:     &api.EBytes{Data: []byte("234567890")},
 				Permissions: []api.Permission{api.Permission_READ, api.Permission_SHARE},
 			},
 			err: status.Errorf(codes.PermissionDenied, "share access denied for datum 2"),
@@ -1035,17 +1056,17 @@ func TestShareDatum(t *testing.T) {
 				datum: datum{
 					Owner:                   "other person",
 					Title:                   "TITLE",
-					Data:                    "saofinfwuoirc",
+					Data:                    []byte("saofinfwuoirc"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
 						"liam923": {
 							UserId:      "liam923",
-							DataKey:     "23idjoqnwuiacjs",
+							DataKey:     []byte("23idjoqnwuiacjs"),
 							Permissions: []api.Permission{api.Permission_READ},
 						},
 						"other person": {
 							UserId:      "other person",
-							DataKey:     "23ewionpwje",
+							DataKey:     []byte("23ewionpwje"),
 							Permissions: []api.Permission{api.Permission_ADMIN},
 						},
 					},
@@ -1059,7 +1080,7 @@ func TestShareDatum(t *testing.T) {
 			request: api.ShareDatumRequest{
 				Id:          "2",
 				TargetId:    "friend",
-				DataKey:     "234567890",
+				DataKey:     &api.EBytes{Data: []byte("234567890")},
 				Permissions: []api.Permission{api.Permission_READ, api.Permission_SHARE, api.Permission_DELETE},
 			},
 			err: status.Errorf(codes.PermissionDenied, "attempted to share more access than the user has for datum 2"),
@@ -1068,17 +1089,17 @@ func TestShareDatum(t *testing.T) {
 				datum: datum{
 					Owner:                   "other person",
 					Title:                   "TITLE",
-					Data:                    "saofinfwuoirc",
+					Data:                    []byte("saofinfwuoirc"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
 						"liam923": {
 							UserId:      "liam923",
-							DataKey:     "23idjoqnwuiacjs",
+							DataKey:     []byte("23idjoqnwuiacjs"),
 							Permissions: []api.Permission{api.Permission_READ, api.Permission_SHARE},
 						},
 						"other person": {
 							UserId:      "other person",
-							DataKey:     "23ewionpwje",
+							DataKey:     []byte("23ewionpwje"),
 							Permissions: []api.Permission{api.Permission_ADMIN},
 						},
 					},
@@ -1092,7 +1113,7 @@ func TestShareDatum(t *testing.T) {
 			request: api.ShareDatumRequest{
 				Id:          "2",
 				TargetId:    "friend",
-				DataKey:     "234567890",
+				DataKey:     &api.EBytes{Data: []byte("234567890")},
 				Permissions: []api.Permission{api.Permission_UNKNOWN},
 			},
 			err:        status.Errorf(codes.InvalidArgument, "unable to share \"UNKNOWN\" permission"),
@@ -1103,7 +1124,7 @@ func TestShareDatum(t *testing.T) {
 			request: api.ShareDatumRequest{
 				Id:          "2",
 				TargetId:    "friend",
-				DataKey:     "234567890",
+				DataKey:     &api.EBytes{Data: []byte("234567890")},
 				Permissions: []api.Permission{api.Permission_READ, api.Permission_SHARE},
 			},
 			err: status.Errorf(codes.Internal, "error connecting to database"),
@@ -1112,17 +1133,17 @@ func TestShareDatum(t *testing.T) {
 				datum: datum{
 					Owner:                   "liam923",
 					Title:                   "TITLE",
-					Data:                    "saofinfwuoirc",
+					Data:                    []byte("saofinfwuoirc"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
 						"third party": {
 							UserId:      "third party",
-							DataKey:     "23idjoqnwuiacjs",
+							DataKey:     []byte("23idjoqnwuiacjs"),
 							Permissions: []api.Permission{api.Permission_READ},
 						},
 						"liam923": {
 							UserId:      "liam923",
-							DataKey:     "a0iojcdopi",
+							DataKey:     []byte("a0iojcdopi"),
 							Permissions: []api.Permission{api.Permission_ADMIN, api.Permission_SHARE},
 						},
 					},
@@ -1178,7 +1199,7 @@ func TestShareDatum(t *testing.T) {
 					actual := response.Datum
 					if expectedId != actual.Id ||
 						expected.Owner != actual.Owner ||
-						expected.Data != actual.Data ||
+						bytes.Compare(expected.Data, actual.Data.Data) != 0 ||
 						expected.DataEncryptionAlgorithm != actual.DataEncryptionAlgorithm ||
 						expected.Title != actual.Title ||
 						len(expected.Accessors) != len(actual.Accessors) {
@@ -1209,6 +1230,10 @@ func TestShareDatum(t *testing.T) {
 		nil,
 		{
 			AccessToken: nil,
+		},
+		{
+			AccessToken: &api.AccessToken{Jwt: &api.JWT{Token: ""}},
+			DataKey:     nil,
 		},
 	}
 	t.Run("invalid requests", func(t *testing.T) {

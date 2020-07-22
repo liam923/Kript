@@ -1,6 +1,7 @@
 package account
 
 import (
+	"bytes"
 	"context"
 	"github.com/liam923/Kript/server/internal/jwt"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
@@ -32,7 +33,7 @@ func (s *Server) LoginUser(ctx context.Context, request *api.LoginUserRequest) (
 		return nil, err
 	}
 
-	if user.Password.Hash != request.Password {
+	if bytes.Compare(user.Password.Hash, request.Password.Data) != 0 {
 		return nil, status.Error(codes.Unauthenticated, "incorrect password")
 	}
 

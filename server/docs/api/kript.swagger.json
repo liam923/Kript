@@ -450,7 +450,7 @@
           "description": "The id of the user whom this access object is associated with."
         },
         "data_key": {
-          "type": "string",
+          "$ref": "#/definitions/apiEBytes",
           "description": "The key used to encrypt the actual data, encrypted using this user's\npublic key and decrypted with their private key."
         },
         "permissions": {
@@ -555,8 +555,8 @@
           "description": "The username of the user."
         },
         "password": {
-          "type": "string",
-          "description": "The hashed password of the user."
+          "$ref": "#/definitions/apiHString",
+          "description": "The hashed password of the user, with the salt appended to the end of the password."
         },
         "salt": {
           "type": "string",
@@ -568,10 +568,11 @@
         },
         "public_key": {
           "type": "string",
+          "format": "byte",
           "description": "The user's public key."
         },
         "private_key": {
-          "type": "string",
+          "$ref": "#/definitions/apiEBytes",
           "description": "The user's private key, encrypted using the user's password."
         },
         "data_encryption_algorithm": {
@@ -605,11 +606,11 @@
           "title": "The title of the datum. (Optional)"
         },
         "data": {
-          "type": "string",
+          "$ref": "#/definitions/apiESecret",
           "description": "The actual data of the datum, such as a password or code, encrypted.\nThis should decrypt to a string of a json object."
         },
         "data_key": {
-          "type": "string",
+          "$ref": "#/definitions/apiEBytes",
           "description": "The key used to encrypt the actual data, encrypted using the owner's\npublic key and decrypted with their private key."
         },
         "data_encryption_algorithm": {
@@ -643,8 +644,8 @@
           "description": "The title of this datum, given by the user."
         },
         "data": {
-          "type": "string",
-          "description": "The actual data of this datum, such as a password or code, encrypted.\nThis should decrypt to a string of a json object."
+          "$ref": "#/definitions/apiESecret",
+          "description": "The actual data of this datum, such as a password or code, encrypted."
         },
         "data_encryption_algorithm": {
           "$ref": "#/definitions/apiSEncryptionAlgorithm",
@@ -672,6 +673,28 @@
         }
       }
     },
+    "apiEBytes": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "format": "byte",
+          "description": "The byte string encrypted."
+        }
+      },
+      "description": "A byte string that has been encrypted."
+    },
+    "apiESecret": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "format": "byte",
+          "description": "The Secret object ecnrypted, using protobuf encoding."
+        }
+      },
+      "description": "A Secret object that has been encrypted."
+    },
     "apiGetDataResponse": {
       "type": "object",
       "properties": {
@@ -692,6 +715,17 @@
           "description": "The information of the specified user."
         }
       }
+    },
+    "apiHString": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "format": "byte",
+          "description": "The string hashed, using utf-8 encoding."
+        }
+      },
+      "description": "A string that has been hashed."
     },
     "apiHashAlgorithm": {
       "type": "string",
@@ -724,8 +758,8 @@
           "description": "The id of the user."
         },
         "password": {
-          "type": "string",
-          "description": "The hashed password of the user."
+          "$ref": "#/definitions/apiHString",
+          "description": "The hashed password of the user, with the salt appended to the end of the password."
         }
       }
     },
@@ -759,7 +793,7 @@
       "type": "object",
       "properties": {
         "private_key": {
-          "type": "string",
+          "$ref": "#/definitions/apiEBytes",
           "description": "The user's private key, encrypted with the user's password."
         },
         "private_key_encryption_algorithm": {
@@ -782,6 +816,7 @@
         },
         "public_key": {
           "type": "string",
+          "format": "byte",
           "description": "The user's public key."
         },
         "salt": {
@@ -877,7 +912,7 @@
           "description": "The id of the user the datum should be shared with."
         },
         "data_key": {
-          "type": "string",
+          "$ref": "#/definitions/apiEBytes",
           "description": "The key used to encrypt the actual data, encrypted using the target user's\npublic key and decrypted with their private key."
         },
         "permissions": {
@@ -946,10 +981,10 @@
         },
         "title": {
           "type": "string",
-          "title": "The new title of the. (Optional)"
+          "title": "The new title of the datum. (Optional)"
         },
         "data": {
-          "type": "string",
+          "$ref": "#/definitions/apiESecret",
           "title": "The new actual data of the datum, such as a password or code, encrypted.\nThis should decrypt to a string of a json object. (Optional)"
         }
       }
@@ -971,12 +1006,12 @@
           "description": "The access token to identify and authenticate the user."
         },
         "old_password": {
-          "type": "string",
-          "description": "The old hashed password of the user."
+          "$ref": "#/definitions/apiHString",
+          "description": "The old hashed password of the user, with the salt appended to the end of the password."
         },
         "new_password": {
-          "type": "string",
-          "description": "The new hashed password of the user."
+          "$ref": "#/definitions/apiHString",
+          "description": "The new hashed password of the user, with the salt appended to the end of the password."
         },
         "new_salt": {
           "type": "string",
@@ -987,7 +1022,7 @@
           "description": "The hashing algorithm used to hash the user's new password."
         },
         "private_key": {
-          "type": "string",
+          "$ref": "#/definitions/apiEBytes",
           "description": "The user's private key, re-encrypted with the user's new password."
         },
         "private_key_encryption_algorithm": {

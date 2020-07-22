@@ -24,6 +24,9 @@ func ToMap(o interface{}, tag string) (map[string]interface{}, error) {
 
 // do the actual recursion
 func toMap(val reflect.Value, tag string) (interface{}, error) {
+	if o, ok := isSpecialType(val); ok {
+		return o, nil
+	}
 	switch val.Type().Kind() {
 	case reflect.Map:
 		m := make(map[string]interface{}, val.Len())
@@ -49,9 +52,6 @@ func toMap(val reflect.Value, tag string) (interface{}, error) {
 		}
 		return s, nil
 	case reflect.Struct:
-		if o, ok := isSpecialStruct(val); ok {
-			return o, nil
-		}
 		m := map[string]interface{}{}
 		structType := val.Type()
 		for i := 0; i < val.NumField(); i++ {
@@ -79,12 +79,14 @@ func toMap(val reflect.Value, tag string) (interface{}, error) {
 	}
 }
 
-// check if the given value is a time.Time
-func isSpecialStruct(val reflect.Value) (interface{}, bool) {
+// check if the given value is a type that should be left alone
+func isSpecialType(val reflect.Value) (interface{}, bool) {
 	if val.CanInterface() {
 		v := val.Interface()
 		switch v.(type) {
 		case time.Time:
+			return v, true
+		case []byte:
 			return v, true
 		}
 	}
