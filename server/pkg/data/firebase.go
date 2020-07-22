@@ -18,7 +18,7 @@ const firestoreTag = "firestore"
 
 type accessor struct {
 	UserId      string           `firestore:"userId,omitempty"`
-	DataKey     string           `firestore:"dataKey,omitempty"`
+	DataKey     []byte           `firestore:"dataKey,omitempty"`
 	Permissions []api.Permission `firestore:"permissions,omitempty"`
 }
 
@@ -42,7 +42,7 @@ type metadata struct {
 type datum struct {
 	Owner                   string                   `firestore:"owner,omitempty"`
 	Title                   string                   `firestore:"title,omitempty"`
-	Data                    string                   `firestore:"data,omitempty"`
+	Data                    []byte                   `firestore:"data,omitempty"`
 	DataEncryptionAlgorithm api.SEncryptionAlgorithm `firestore:"dataEncryptionAlgorithm,omitempty"`
 	Accessors               map[string]accessor      `firestore:"accessors,omitempty"`
 	Metadata                metadata                 `firestore:"metadata,omitempty"`
@@ -58,7 +58,7 @@ func (d datum) toApiDatum(id string) *api.Datum {
 	for key, accessor := range d.Accessors {
 		accessors[key] = &api.Datum_Access{
 			UserId:      accessor.UserId,
-			DataKey:     accessor.DataKey,
+			DataKey:     &api.EBytes{Data: accessor.DataKey},
 			Permissions: accessor.Permissions,
 		}
 	}
@@ -84,7 +84,7 @@ func (d datum) toApiDatum(id string) *api.Datum {
 		Id:                      id,
 		Owner:                   d.Owner,
 		Title:                   d.Title,
-		Data:                    d.Data,
+		Data:                    &api.ESecret{Data: d.Data},
 		DataEncryptionAlgorithm: d.DataEncryptionAlgorithm,
 		Accessors:               accessors,
 		Metadata: &api.Datum_Metadata{

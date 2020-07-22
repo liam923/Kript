@@ -55,7 +55,7 @@ func (s *Server) UpdateDatum(ctx context.Context, request *api.UpdateDatumReques
 	startTime := time.Now()
 
 	// validate the request and authenticate the user before doing anything
-	if request == nil || !s.validateAccessTokenFormat(request.AccessToken) {
+	if request == nil || request.Data == nil || !s.validateAccessTokenFormat(request.AccessToken) {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	userId, err := s.loginUserWithAccessToken(*request.AccessToken)
@@ -75,7 +75,7 @@ func (s *Server) UpdateDatum(ctx context.Context, request *api.UpdateDatumReques
 
 	newDatum := *oldDatum
 	newDatum.Title = request.Title
-	newDatum.Data = request.Data
+	newDatum.Data = request.Data.Data
 	newDatum.Metadata.LastEdited = startTime
 
 	err = s.database.updateDatum(ctx, &newDatum, request.Id)
@@ -90,7 +90,8 @@ func (s *Server) UpdateDatum(ctx context.Context, request *api.UpdateDatumReques
 
 func (s *Server) CreateDatum(ctx context.Context, request *api.CreateDatumRequest) (*api.CreateDatumResponse, error) {
 	// validate the request and authenticate the user before doing anything
-	if request == nil || !s.validateAccessTokenFormat(request.AccessToken) {
+	if request == nil || request.Data == nil || request.DataKey == nil ||
+		!s.validateAccessTokenFormat(request.AccessToken) {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	userId, err := s.loginUserWithAccessToken(*request.AccessToken)
@@ -101,12 +102,12 @@ func (s *Server) CreateDatum(ctx context.Context, request *api.CreateDatumReques
 	newDatum := datum{
 		Owner:                   userId,
 		Title:                   request.Title,
-		Data:                    request.Data,
+		Data:                    request.Data.Data,
 		DataEncryptionAlgorithm: request.DataEncryptionAlgorithm,
 		Accessors: map[string]accessor{
 			userId: {
 				UserId:      userId,
-				DataKey:     request.DataKey,
+				DataKey:     request.DataKey.Data,
 				Permissions: []api.Permission{api.Permission_ADMIN},
 			},
 		},
@@ -169,7 +170,7 @@ func (s *Server) DeleteDatum(ctx context.Context, request *api.DeleteDatumReques
 
 func (s *Server) ShareDatum(ctx context.Context, request *api.ShareDatumRequest) (*api.ShareDatumResponse, error) {
 	// validate the request and authenticate the user before doing anything
-	if request == nil || !s.validateAccessTokenFormat(request.AccessToken) {
+	if request == nil || request.DataKey == nil || !s.validateAccessTokenFormat(request.AccessToken) {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
@@ -219,7 +220,7 @@ func (s *Server) ShareDatum(ctx context.Context, request *api.ShareDatumRequest)
 	} else {
 		newAccessor = accessor{
 			UserId:      request.TargetId,
-			DataKey:     request.DataKey,
+			DataKey:     request.DataKey.Data,
 			Permissions: request.Permissions,
 		}
 	}

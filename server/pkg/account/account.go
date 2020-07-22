@@ -1,6 +1,7 @@
 package account
 
 import (
+	"bytes"
 	"context"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
 	"google.golang.org/grpc/codes"
@@ -8,7 +9,7 @@ import (
 )
 
 func (s *Server) UpdatePassword(ctx context.Context, request *api.UpdatePasswordRequest) (*api.UpdatePasswordResponse, error) {
-	if request == nil {
+	if request == nil || request.OldPassword == nil || request.NewPassword == nil || request.PrivateKey == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
@@ -22,18 +23,18 @@ func (s *Server) UpdatePassword(ctx context.Context, request *api.UpdatePassword
 		return nil, err
 	}
 
-	if fetchedUser.Password.Hash != request.OldPassword {
+	if bytes.Compare(fetchedUser.Password.Hash, request.OldPassword.Data) != 0 {
 		return nil, status.Error(codes.InvalidArgument, "incorrect old password")
 	}
 
 	err = s.database.updateUser(ctx, userId, &user{
 		Password: password{
-			Hash:          request.NewPassword,
+			Hash:          request.NewPassword.Data,
 			Salt:          request.NewSalt,
 			HashAlgorithm: request.NewPasswordHashAlgorithm,
 		},
 		Keys: keys{
-			PrivateKey:                    request.PrivateKey,
+			PrivateKey:                    request.PrivateKey.Data,
 			PrivateKeyEncryptionAlgorithm: request.PrivateKeyEncryptionAlgorithm,
 		},
 	})
@@ -42,10 +43,10 @@ func (s *Server) UpdatePassword(ctx context.Context, request *api.UpdatePassword
 	}
 
 	updatedUser := *fetchedUser
-	updatedUser.Password.Hash = request.NewPassword
+	updatedUser.Password.Hash = request.NewPassword.Data
 	updatedUser.Password.Salt = request.NewSalt
 	updatedUser.Password.HashAlgorithm = request.NewPasswordHashAlgorithm
-	updatedUser.Keys.PrivateKey = request.PrivateKey
+	updatedUser.Keys.PrivateKey = request.PrivateKey.Data
 	updatedUser.Keys.PrivateKeyEncryptionAlgorithm = request.PrivateKeyEncryptionAlgorithm
 	apiUser := updatedUser.toApiUser(userId, true)
 	return &api.UpdatePasswordResponse{
@@ -54,7 +55,7 @@ func (s *Server) UpdatePassword(ctx context.Context, request *api.UpdatePassword
 }
 
 func (s *Server) CreateAccount(ctx context.Context, request *api.CreateAccountRequest) (*api.CreateAccountResponse, error) {
-	if request == nil {
+	if request == nil || request.Password == nil || request.PrivateKey == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
@@ -69,13 +70,13 @@ func (s *Server) CreateAccount(ctx context.Context, request *api.CreateAccountRe
 	user := user{
 		Username: request.Username,
 		Password: password{
-			Hash:          request.Password,
+			Hash:          request.Password.Data,
 			Salt:          request.Salt,
 			HashAlgorithm: request.PasswordHashAlgorithm,
 		},
 		Keys: keys{
 			PublicKey:                     request.PublicKey,
-			PrivateKey:                    request.PrivateKey,
+			PrivateKey:                    request.PrivateKey.Data,
 			PrivateKeyEncryptionAlgorithm: request.PrivateKeyEncryptionAlgorithm,
 			DataEncryptionAlgorithm:       request.DataEncryptionAlgorithm,
 		},

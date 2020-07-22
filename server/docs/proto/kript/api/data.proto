@@ -2,6 +2,7 @@ syntax="proto3";
 package kript.api; option go_package = "github.com/liam923/Kript/server/pkg/proto/kript/api";
 
 import "kript/api/universal.proto";
+import "kript/api/encrypt.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "protoc-gen-swagger/options/annotations.proto";
@@ -25,8 +26,7 @@ message Datum {
   // The title of this datum, given by the user.
   string title = 3;
   // The actual data of this datum, such as a password or code, encrypted.
-  // This should decrypt to a string of a json object.
-  string data = 4;
+  ESecret data = 4;
   // The encryption algorithm used to encrypt the actual data.
   SEncryptionAlgorithm data_encryption_algorithm = 5;
   // A map of ids of users who have access to this datum to information on what
@@ -42,7 +42,7 @@ message Datum {
     string user_id = 1;
     // The key used to encrypt the actual data, encrypted using this user's
     // public key and decrypted with their private key.
-    string data_key = 2;
+    EBytes data_key = 2;
     // The list of permissions this user has on this datum.
     repeated Permission permissions = 3;
   }
@@ -151,11 +151,11 @@ message UpdateDatumRequest {
   AccessToken access_token = 1;
   // The id of the datum to update.
   string id = 2;
-  // The new title of the. (Optional)
+  // The new title of the datum. (Optional)
   string title = 3;
   // The new actual data of the datum, such as a password or code, encrypted.
   // This should decrypt to a string of a json object. (Optional)
-  string data = 4;
+  ESecret data = 4;
 }
 
 message UpdateDatumResponse {
@@ -170,10 +170,10 @@ message CreateDatumRequest {
   string title = 3;
   // The actual data of the datum, such as a password or code, encrypted.
   // This should decrypt to a string of a json object.
-  string data = 4;
+  ESecret data = 4;
   // The key used to encrypt the actual data, encrypted using the owner's
   // public key and decrypted with their private key.
-  string data_key = 5;
+  EBytes data_key = 5;
   // The encryption algorithm used to encrypt the actual data.
   SEncryptionAlgorithm data_encryption_algorithm = 6;
 }
@@ -204,7 +204,7 @@ message ShareDatumRequest {
   string target_id = 3;
   // The key used to encrypt the actual data, encrypted using the target user's
   // public key and decrypted with their private key.
-  string data_key = 4;
+  EBytes data_key = 4;
   // The permissions to be granted to this user. These are in addition to any
   // permissions the user already has.
   repeated Permission permissions = 5;

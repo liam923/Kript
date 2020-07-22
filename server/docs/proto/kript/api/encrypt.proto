@@ -1,0 +1,48 @@
+syntax="proto3";
+package kript.api; option go_package = "github.com/liam923/Kript/server/pkg/proto/kript/api";
+
+message Secret {
+    message Password {
+        string url = 1;
+        string password = 2;
+    }
+    
+    message Code {
+        enum Type {
+            UNKNOWN_CODE_TYPE = 0;
+            BANK_ACCOUNT_NUMBER = 1;
+            SOCIAL_SECURITY_NUMBER = 2;
+        }
+    
+        string code = 1;
+        Type type = 2;
+    }
+    
+    message Note {
+        string text = 1;
+    }
+
+    oneof secret {
+        Password password = 1;
+        Code code = 2;
+        Note note = 3;
+    }
+}
+
+// A Secret object that has been encrypted.
+message ESecret {
+    // The Secret object ecnrypted, using protobuf encoding.
+    bytes data = 1;
+}
+
+// A byte string that has been encrypted.
+message EBytes {
+    // The byte string encrypted.
+    bytes data = 1;
+}
+
+// A string that has been hashed.
+message HString {
+    // The string hashed, using utf-8 encoding.
+    bytes data = 1;
+}

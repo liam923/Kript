@@ -1,6 +1,7 @@
 package account
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/golang/mock/gomock"
@@ -21,11 +22,11 @@ func (u *userMatcher) Matches(x interface{}) bool {
 	switch v := x.(type) {
 	case *user:
 		if u.user.Username == v.Username &&
-			u.user.Password.Hash == v.Password.Hash &&
+			bytes.Compare(u.user.Password.Hash, v.Password.Hash) == 0 &&
 			u.user.Password.HashAlgorithm == v.Password.HashAlgorithm &&
 			u.user.Password.Salt == v.Password.Salt &&
-			u.user.Keys.PublicKey == v.Keys.PublicKey &&
-			u.user.Keys.PrivateKey == v.Keys.PrivateKey &&
+			bytes.Compare(u.user.Keys.PublicKey, v.Keys.PublicKey) == 0 &&
+			bytes.Compare(u.user.Keys.PrivateKey, v.Keys.PrivateKey) == 0 &&
 			u.user.Keys.PrivateKeyEncryptionAlgorithm == v.Keys.PrivateKeyEncryptionAlgorithm &&
 			u.user.Keys.DataEncryptionAlgorithm == v.Keys.DataEncryptionAlgorithm &&
 			len(u.user.TwoFactor) == len(v.TwoFactor) {
@@ -72,23 +73,23 @@ func TestUpdatePassword(t *testing.T) {
 			testName: "valid password update 1",
 			request: &api.UpdatePasswordRequest{
 				AccessToken:                   &api.AccessToken{Jwt: &api.JWT{Token: validToken}},
-				OldPassword:                   "spaghetti",
-				NewPassword:                   "pasta",
+				OldPassword:                   &api.HString{Data: []byte("spaghetti")},
+				NewPassword:                   &api.HString{Data: []byte("pasta")},
 				NewSalt:                       "pepper",
 				NewPasswordHashAlgorithm:      0,
-				PrivateKey:                    "re-encrypted",
+				PrivateKey:                    &api.EBytes{Data: []byte("re-encrypted")},
 				PrivateKeyEncryptionAlgorithm: 0,
 			},
 			user: user{
 				Username: "liam923",
 				Password: password{
-					Hash:          "spaghetti",
+					Hash:          []byte("spaghetti"),
 					Salt:          "salt",
 					HashAlgorithm: 0,
 				},
 				Keys: keys{
-					PublicKey:                     "public",
-					PrivateKey:                    "encrypted",
+					PublicKey:                     []byte("public"),
+					PrivateKey:                    []byte("encrypted"),
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
@@ -102,23 +103,23 @@ func TestUpdatePassword(t *testing.T) {
 			testName: "valid password update 2",
 			request: &api.UpdatePasswordRequest{
 				AccessToken:                   &api.AccessToken{Jwt: &api.JWT{Token: validToken}},
-				OldPassword:                   "spaghetti",
-				NewPassword:                   "pasta",
+				OldPassword:                   &api.HString{Data: []byte("spaghetti")},
+				NewPassword:                   &api.HString{Data: []byte("pasta")},
 				NewSalt:                       "pepper",
 				NewPasswordHashAlgorithm:      0,
-				PrivateKey:                    "re-encrypted",
+				PrivateKey:                    &api.EBytes{Data: []byte("re-encrypted")},
 				PrivateKeyEncryptionAlgorithm: 0,
 			},
 			user: user{
 				Username: "liam923",
 				Password: password{
-					Hash:          "spaghetti",
+					Hash:          []byte("spaghetti"),
 					Salt:          "salt",
 					HashAlgorithm: 0,
 				},
 				Keys: keys{
-					PublicKey:                     "public",
-					PrivateKey:                    "encrypted",
+					PublicKey:                     []byte("public"),
+					PrivateKey:                    []byte("encrypted"),
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
@@ -139,23 +140,23 @@ func TestUpdatePassword(t *testing.T) {
 			testName: "wrong old password",
 			request: &api.UpdatePasswordRequest{
 				AccessToken:                   &api.AccessToken{Jwt: &api.JWT{Token: validToken}},
-				OldPassword:                   "rigatoni",
-				NewPassword:                   "pasta",
+				OldPassword:                   &api.HString{Data: []byte("rigatoni")},
+				NewPassword:                   &api.HString{Data: []byte("pasta")},
 				NewSalt:                       "pepper",
 				NewPasswordHashAlgorithm:      0,
-				PrivateKey:                    "re-encrypted",
+				PrivateKey:                    &api.EBytes{Data: []byte("re-encrypted")},
 				PrivateKeyEncryptionAlgorithm: 0,
 			},
 			user: user{
 				Username: "liam923",
 				Password: password{
-					Hash:          "spaghetti",
+					Hash:          []byte("spaghetti"),
 					Salt:          "salt",
 					HashAlgorithm: 0,
 				},
 				Keys: keys{
-					PublicKey:                     "public",
-					PrivateKey:                    "encrypted",
+					PublicKey:                     []byte("public"),
+					PrivateKey:                    []byte("encrypted"),
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
@@ -172,13 +173,13 @@ func TestUpdatePassword(t *testing.T) {
 			user: user{
 				Username: "liam923",
 				Password: password{
-					Hash:          "spaghetti",
+					Hash:          []byte("spaghetti"),
 					Salt:          "salt",
 					HashAlgorithm: 0,
 				},
 				Keys: keys{
-					PublicKey:                     "public",
-					PrivateKey:                    "encrypted",
+					PublicKey:                     []byte("public"),
+					PrivateKey:                    []byte("encrypted"),
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
@@ -200,12 +201,12 @@ func TestUpdatePassword(t *testing.T) {
 					db.EXPECT().
 						updateUser(context.Background(), tt.userId, &userMatcher{user: &user{
 							Password: password{
-								Hash:          tt.request.NewPassword,
+								Hash:          tt.request.NewPassword.Data,
 								Salt:          tt.request.NewSalt,
 								HashAlgorithm: tt.request.NewPasswordHashAlgorithm,
 							},
 							Keys: keys{
-								PrivateKey:                    tt.request.PrivateKey,
+								PrivateKey:                    tt.request.PrivateKey.Data,
 								PrivateKeyEncryptionAlgorithm: tt.request.PrivateKeyEncryptionAlgorithm,
 							},
 						}}).
@@ -226,13 +227,13 @@ func TestUpdatePassword(t *testing.T) {
 				expectedUser := user{
 					Username: tt.user.Username,
 					Password: password{
-						Hash:          tt.request.NewPassword,
+						Hash:          tt.request.NewPassword.Data,
 						Salt:          tt.request.NewSalt,
 						HashAlgorithm: tt.request.NewPasswordHashAlgorithm,
 					},
 					Keys: keys{
 						PublicKey:                     tt.user.Keys.PublicKey,
-						PrivateKey:                    tt.request.PrivateKey,
+						PrivateKey:                    tt.request.PrivateKey.Data,
 						PrivateKeyEncryptionAlgorithm: tt.request.PrivateKeyEncryptionAlgorithm,
 						DataEncryptionAlgorithm:       tt.user.Keys.DataEncryptionAlgorithm,
 					},
@@ -241,12 +242,12 @@ func TestUpdatePassword(t *testing.T) {
 				if expectedUser.Public.Username != response.User.Public.Username ||
 					expectedUser.Public.Id != response.User.Public.Id ||
 					expectedUser.Public.DataEncryptionAlgorithm != response.User.Public.DataEncryptionAlgorithm ||
-					expectedUser.Public.PublicKey != response.User.Public.PublicKey ||
+					bytes.Compare(expectedUser.Public.PublicKey, response.User.Public.PublicKey) != 0 ||
 					expectedUser.Public.PasswordHashAlgorithm != response.User.Public.PasswordHashAlgorithm ||
 					expectedUser.Public.Salt != response.User.Public.Salt ||
-					expectedUser.Private.PrivateKey != response.User.Private.PrivateKey ||
+					bytes.Compare(expectedUser.Private.PrivateKey.Data, response.User.Private.PrivateKey.Data) != 0 ||
 					expectedUser.Private.PrivateKeyEncryptionAlgorithm != response.User.Private.PrivateKeyEncryptionAlgorithm {
-					t.Errorf("invalid user returned: %v", response.User)
+					t.Errorf("invalid user returned: %v, expected: %v", response.User, expectedUser)
 				}
 
 				for _, invalidToken := range invalidTokens {
@@ -287,11 +288,11 @@ func TestCreateAccount(t *testing.T) {
 		{
 			request: api.CreateAccountRequest{
 				Username:                      "liam923",
-				Password:                      "password",
+				Password:                      &api.HString{Data: []byte("password")},
 				Salt:                          "salt",
 				PasswordHashAlgorithm:         0,
-				PublicKey:                     "1234567890",
-				PrivateKey:                    "0987654321",
+				PublicKey:                     []byte("1234567890"),
+				PrivateKey:                    &api.EBytes{Data: []byte("0987654321")},
 				DataEncryptionAlgorithm:       0,
 				PrivateKeyEncryptionAlgorithm: 0,
 			},
@@ -300,11 +301,11 @@ func TestCreateAccount(t *testing.T) {
 		{
 			request: api.CreateAccountRequest{
 				Username:                      "username",
-				Password:                      "asdfghjkl",
+				Password:                      &api.HString{Data: []byte("asdfghjkl")},
 				Salt:                          "salty string",
 				PasswordHashAlgorithm:         0,
-				PublicKey:                     "public",
-				PrivateKey:                    "private",
+				PublicKey:                     []byte("public"),
+				PrivateKey:                    &api.EBytes{Data: []byte("private")},
 				DataEncryptionAlgorithm:       0,
 				PrivateKeyEncryptionAlgorithm: 0,
 			},
@@ -313,11 +314,11 @@ func TestCreateAccount(t *testing.T) {
 		{
 			request: api.CreateAccountRequest{
 				Username:                      "liam923",
-				Password:                      "password",
+				Password:                      &api.HString{Data: []byte("password")},
 				Salt:                          "salt",
 				PasswordHashAlgorithm:         0,
-				PublicKey:                     "1234567890",
-				PrivateKey:                    "0987654321",
+				PublicKey:                     []byte("1234567890"),
+				PrivateKey:                    &api.EBytes{Data: []byte("0987654321")},
 				DataEncryptionAlgorithm:       0,
 				PrivateKeyEncryptionAlgorithm: 0,
 			},
@@ -334,13 +335,13 @@ func TestCreateAccount(t *testing.T) {
 			createdUser := user{
 				Username: tt.request.Username,
 				Password: password{
-					Hash:          tt.request.Password,
+					Hash:          tt.request.Password.Data,
 					Salt:          tt.request.Salt,
 					HashAlgorithm: tt.request.PasswordHashAlgorithm,
 				},
 				Keys: keys{
 					PublicKey:                     tt.request.PublicKey,
-					PrivateKey:                    tt.request.PrivateKey,
+					PrivateKey:                    tt.request.PrivateKey.Data,
 					PrivateKeyEncryptionAlgorithm: tt.request.PrivateKeyEncryptionAlgorithm,
 					DataEncryptionAlgorithm:       tt.request.DataEncryptionAlgorithm,
 				},
@@ -373,10 +374,10 @@ func TestCreateAccount(t *testing.T) {
 					if expectedUser.Public.Username != response.Response.User.Public.Username ||
 						expectedUser.Public.Id != response.Response.User.Public.Id ||
 						expectedUser.Public.DataEncryptionAlgorithm != response.Response.User.Public.DataEncryptionAlgorithm ||
-						expectedUser.Public.PublicKey != response.Response.User.Public.PublicKey ||
+						bytes.Compare(expectedUser.Public.PublicKey, response.Response.User.Public.PublicKey) != 0 ||
 						expectedUser.Public.PasswordHashAlgorithm != response.Response.User.Public.PasswordHashAlgorithm ||
 						expectedUser.Public.Salt != response.Response.User.Public.Salt ||
-						expectedUser.Private.PrivateKey != response.Response.User.Private.PrivateKey ||
+						bytes.Compare(expectedUser.Private.PrivateKey.Data, response.Response.User.Private.PrivateKey.Data) != 0 ||
 						expectedUser.Private.PrivateKeyEncryptionAlgorithm != response.Response.User.Private.PrivateKeyEncryptionAlgorithm {
 						t.Errorf("invalid user returned: %v", response.Response.User)
 					}

@@ -2,6 +2,7 @@ syntax="proto3";
 package kript.api;
 
 import "kript/api/universal.proto";
+import "kript/api/encrypt.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-swagger/options/annotations.proto";
 
@@ -23,7 +24,7 @@ message PublicUser {
   // The username of the user.
   string username = 2;
   // The user's public key.
-  string public_key = 3;
+  bytes public_key = 3;
   // The salt used to hash the user's password.
   string salt = 4;
   // The hashing algorithm used to hash the user's password.
@@ -35,7 +36,7 @@ message PublicUser {
 // Private information about a user that is only visible to the user.
 message PrivateUser {
   // The user's private key, encrypted with the user's password.
-  string private_key = 1;
+  EBytes private_key = 1;
   // The encryption algorithm used to encrypt the private key.
   SEncryptionAlgorithm private_key_encryption_algorithm = 2;
 }
@@ -153,8 +154,8 @@ message LoginUserRequest {
     // The id of the user.
     string user_id = 2;
   }
-  // The hashed password of the user.
-  string password = 3;
+  // The hashed password of the user, with the salt appended to the end of the password.
+  HString password = 3;
 }
 
 message LoginUserResponse {
@@ -209,16 +210,16 @@ message VerifyUserResponse {
 message UpdatePasswordRequest {
   // The access token to identify and authenticate the user.
   AccessToken access_token = 1;
-  // The old hashed password of the user.
-  string old_password = 2;
-  // The new hashed password of the user.
-  string new_password = 3;
+  // The old hashed password of the user, with the salt appended to the end of the password.
+  HString old_password = 2;
+  // The new hashed password of the user, with the salt appended to the end of the password.
+  HString new_password = 3;
   // The salt used in the new hashed password.
   string new_salt = 4;
   // The hashing algorithm used to hash the user's new password.
   HashAlgorithm new_password_hash_algorithm = 5;
   // The user's private key, re-encrypted with the user's new password.
-  string private_key = 6;
+  EBytes private_key = 6;
   // The encryption algorithm used to encrypt the user's private key.
   SEncryptionAlgorithm private_key_encryption_algorithm = 7;
 }
@@ -231,16 +232,16 @@ message UpdatePasswordResponse {
 message CreateAccountRequest {
   // The username of the user.
   string username = 1;
-  // The hashed password of the user.
-  string password = 2;
+  // The hashed password of the user, with the salt appended to the end of the password.
+  HString password = 2;
   // The salt used in the new hashed password.
   string salt = 3;
   // The hashing algorithm used to hash the user's password.
   HashAlgorithm password_hash_algorithm = 4;
   // The user's public key.
-  string public_key = 5;
+  bytes public_key = 5;
   // The user's private key, encrypted using the user's password.
-  string private_key = 6;
+  EBytes private_key = 6;
   // The encryption algorithm used to encrypt the user's data.
   AEncryptionAlgorithm data_encryption_algorithm = 7;
   // The encryption algorithm used to encrypt the user's private key.

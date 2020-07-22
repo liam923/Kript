@@ -70,7 +70,7 @@ func TestLoginUser(t *testing.T) {
 			testName: "validPassword login userID",
 			request: api.LoginUserRequest{
 				UserIdentifier: &api.LoginUserRequest_UserId{"1234567890"},
-				Password:       "password",
+				Password:       &api.HString{Data: []byte("password")},
 			},
 			isCorrectPassword: true,
 			twoFactorOptions: []api.TwoFactor{
@@ -84,13 +84,13 @@ func TestLoginUser(t *testing.T) {
 			user: &user{
 				Username: "liam923",
 				Password: password{
-					Hash:          "password",
+					Hash:          []byte("password"),
 					Salt:          "salt",
 					HashAlgorithm: 0,
 				},
 				Keys: keys{
-					PublicKey:                     "public_key",
-					PrivateKey:                    "private_key",
+					PublicKey:                     []byte("public_key"),
+					PrivateKey:                    []byte("private_key"),
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
@@ -109,7 +109,7 @@ func TestLoginUser(t *testing.T) {
 			testName: "validPassword login username",
 			request: api.LoginUserRequest{
 				UserIdentifier: &api.LoginUserRequest_Username{"liams923"},
-				Password:       "hashed",
+				Password:       &api.HString{Data: []byte("hashed")},
 			},
 			isCorrectPassword: true,
 			twoFactorOptions:  nil,
@@ -117,13 +117,13 @@ func TestLoginUser(t *testing.T) {
 			user: &user{
 				Username: "liams923",
 				Password: password{
-					Hash:          "hashed",
+					Hash:          []byte("hashed"),
 					Salt:          "salty",
 					HashAlgorithm: 0,
 				},
 				Keys: keys{
-					PublicKey:                     "pbkey",
-					PrivateKey:                    "prkey",
+					PublicKey:                     []byte("pbkey"),
+					PrivateKey:                    []byte("prkey"),
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
@@ -137,7 +137,7 @@ func TestLoginUser(t *testing.T) {
 			testName: "nonexistent username",
 			request: api.LoginUserRequest{
 				UserIdentifier: &api.LoginUserRequest_Username{"nonexistent"},
-				Password:       "doesn't matter",
+				Password:       &api.HString{Data: []byte("doesn't matter")},
 			},
 			ctx:            context.Background(),
 			user:           nil,
@@ -147,7 +147,7 @@ func TestLoginUser(t *testing.T) {
 			testName: "nonexistent user id",
 			request: api.LoginUserRequest{
 				UserIdentifier: &api.LoginUserRequest_UserId{"wqiodnk"},
-				Password:       "doesn't matter",
+				Password:       &api.HString{Data: []byte("doesn't matter")},
 			},
 			ctx:            context.Background(),
 			user:           nil,
@@ -159,20 +159,20 @@ func TestLoginUser(t *testing.T) {
 			testName: "incorrect password userId",
 			request: api.LoginUserRequest{
 				UserIdentifier: &api.LoginUserRequest_UserId{"1234567890"},
-				Password:       "password",
+				Password:       &api.HString{Data: []byte("password")},
 			},
 			twoFactorOptions: nil,
 			ctx:              context.Background(),
 			user: &user{
 				Username: "liam923",
 				Password: password{
-					Hash:          "PASSWORD",
+					Hash:          []byte("PASSWORD"),
 					Salt:          "salt",
 					HashAlgorithm: 0,
 				},
 				Keys: keys{
-					PublicKey:                     "public_key",
-					PrivateKey:                    "private_key",
+					PublicKey:                     []byte("public_key"),
+					PrivateKey:                    []byte("private_key"),
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
@@ -185,7 +185,7 @@ func TestLoginUser(t *testing.T) {
 			testName: "incorrect password username",
 			request: api.LoginUserRequest{
 				UserIdentifier: &api.LoginUserRequest_Username{"liam923"},
-				Password:       "hashed",
+				Password:       &api.HString{Data: []byte("hashed")},
 			},
 			twoFactorOptions: []api.TwoFactor{
 				{
@@ -198,13 +198,13 @@ func TestLoginUser(t *testing.T) {
 			user: &user{
 				Username: "liam923",
 				Password: password{
-					Hash:          "nothashed",
+					Hash:          []byte("nothashed"),
 					Salt:          "salty",
 					HashAlgorithm: 0,
 				},
 				Keys: keys{
-					PublicKey:                     "pbkey",
-					PrivateKey:                    "prkey",
+					PublicKey:                     []byte("pbkey"),
+					PrivateKey:                    []byte("prkey"),
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
@@ -298,7 +298,7 @@ func TestLoginUser(t *testing.T) {
 		malformedRequests := []*api.LoginUserRequest{
 			{
 				UserIdentifier: nil,
-				Password:       "",
+				Password:       &api.HString{Data: []byte("")},
 			},
 			nil,
 		}
