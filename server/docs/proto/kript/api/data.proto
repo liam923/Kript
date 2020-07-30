@@ -158,10 +158,8 @@ message UpdateDatumRequest {
   // The new actual data of the datum, such as a password or code, encrypted.
   // This should decrypt to a string of a json object.
   ESecret data = 4;
-  // The new encryption algorithm used to encrypt the actual data.
-  SEncryptionAlgorithm data_encryption_algorithm = 5;
   // The new initialization vector used to encrypt the data.
-  bytes data_iv = 6;
+  bytes data_iv = 7;
 }
 
 message UpdateDatumResponse {

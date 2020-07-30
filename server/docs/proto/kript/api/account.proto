@@ -26,7 +26,7 @@ message PublicUser {
   // The user's public key.
   bytes public_key = 3;
   // The salt used to hash the user's password.
-  string password_salt = 4;
+  bytes password_salt = 4;
   // The hashing algorithm used to hash the user's password.
   HashAlgorithm password_hash_algorithm = 5;
   // The encryption algorithm used to encrypt the user's data keys.
@@ -42,7 +42,7 @@ message PrivateUser {
   // The initialization vector used to encrypt the private key.
   bytes private_key_iv = 3;
   // The salt used in generating the key for encrypting/decrypting the private key.
-  string private_key_key_salt = 4;
+  bytes private_key_key_salt = 4;
   // The hash algorithm used to generate the key for encrypting/decrypting the private key.
   HashAlgorithm private_key_key_hash_algorithm = 5;
 }
@@ -221,7 +221,7 @@ message UpdatePasswordRequest {
   // The new hashed password of the user.
   HString new_password = 3;
   // The salt used in the new hashed password.
-  string new_salt = 4;
+  bytes new_salt = 4;
   // The hashing algorithm used to hash the user's new password.
   HashAlgorithm new_password_hash_algorithm = 5;
   // The user's private key, re-encrypted with the user's new password.
@@ -231,7 +231,7 @@ message UpdatePasswordRequest {
   // The initialization vector used to encrypt the private key.
   bytes private_key_iv = 8;
   // The new salt used in generating the key for encrypting/decrypting the private key.
-  string private_key_key_salt = 9;
+  bytes private_key_key_salt = 9;
   // The new hash algorithm used to generate the key for encrypting/decrypting the private key.
   HashAlgorithm private_key_key_hash_algorithm = 10;
 }
@@ -247,7 +247,7 @@ message CreateAccountRequest {
   // The hashed password of the user.
   HString password = 2;
   // The salt used in the new hashed password.
-  string salt = 3;
+  bytes salt = 3;
   // The hashing algorithm used to hash the user's password.
   HashAlgorithm password_hash_algorithm = 4;
   // The user's public key.
@@ -261,7 +261,7 @@ message CreateAccountRequest {
   // The initialization vector used to encrypt the private key.
   bytes private_key_iv = 9;
   // The salt used in generating the key for encrypting/decrypting the private key.
-  string private_key_key_salt = 10;
+  bytes private_key_key_salt = 10;
   // The hash algorithm used to generate the key for encrypting/decrypting the private key.
   HashAlgorithm private_key_key_hash_algorithm = 11;
 }

@@ -85,7 +85,7 @@ func TestLoginUser(t *testing.T) {
 				Username: "liam923",
 				Password: password{
 					Hash:          []byte("password"),
-					Salt:          "salt",
+					Salt:          []byte("salt"),
 					HashAlgorithm: 0,
 				},
 				Keys: keys{
@@ -118,7 +118,7 @@ func TestLoginUser(t *testing.T) {
 				Username: "liams923",
 				Password: password{
 					Hash:          []byte("hashed"),
-					Salt:          "salty",
+					Salt:          []byte("salty"),
 					HashAlgorithm: 0,
 				},
 				Keys: keys{
@@ -167,7 +167,7 @@ func TestLoginUser(t *testing.T) {
 				Username: "liam923",
 				Password: password{
 					Hash:          []byte("PASSWORD"),
-					Salt:          "salt",
+					Salt:          []byte("salt"),
 					HashAlgorithm: 0,
 				},
 				Keys: keys{
@@ -199,7 +199,7 @@ func TestLoginUser(t *testing.T) {
 				Username: "liam923",
 				Password: password{
 					Hash:          []byte("nothashed"),
-					Salt:          "salty",
+					Salt:          []byte("salty"),
 					HashAlgorithm: 0,
 				},
 				Keys: keys{

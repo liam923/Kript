@@ -208,6 +208,7 @@ func local_request_DataService_ShareDatum_0(ctx context.Context, marshaler runti
 // RegisterDataServiceHandlerServer registers the http handlers for service DataService to "mux".
 // UnaryRPC     :call DataServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterDataServiceHandlerFromEndpoint instead.
 func RegisterDataServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server DataServiceServer) error {
 
 	mux.Handle("GET", pattern_DataService_GetData_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

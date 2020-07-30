@@ -16,6 +16,7 @@
   "paths": {
     "/account/change-password": {
       "post": {
+        "summary": "Change the user's password.",
         "operationId": "AccountService_UpdatePassword",
         "responses": {
           "200": {
@@ -48,6 +49,7 @@
     },
     "/account/create": {
       "post": {
+        "summary": "Create an account.",
         "operationId": "AccountService_CreateAccount",
         "responses": {
           "200": {
@@ -80,6 +82,7 @@
     },
     "/auth/login": {
       "post": {
+        "summary": "Login the user. If the user has 2-factor authentication enabled,\na verification code must be sent with SendVerification to complete the\nlogin process.",
         "operationId": "AccountService_LoginUser",
         "responses": {
           "200": {
@@ -112,6 +115,7 @@
     },
     "/auth/refresh": {
       "post": {
+        "summary": "Fetch a new access token.",
         "operationId": "AccountService_RefreshAuth",
         "responses": {
           "200": {
@@ -144,6 +148,7 @@
     },
     "/auth/verify": {
       "post": {
+        "summary": "Complete logging in the user.",
         "operationId": "AccountService_VerifyUser",
         "responses": {
           "200": {
@@ -176,6 +181,7 @@
     },
     "/auth/verify/send": {
       "post": {
+        "summary": "Send a verification code to the user using the specified method.",
         "operationId": "AccountService_SendVerification",
         "responses": {
           "200": {
@@ -208,6 +214,7 @@
     },
     "/data": {
       "get": {
+        "summary": "Get the list of all data for the logged in user, or a specific datum if\nspecified.",
         "operationId": "DataService_GetData",
         "responses": {
           "200": {
@@ -248,6 +255,7 @@
         ]
       },
       "delete": {
+        "summary": "Delete the specified datum.",
         "operationId": "DataService_DeleteDatum",
         "responses": {
           "200": {
@@ -284,6 +292,7 @@
         ]
       },
       "post": {
+        "summary": "Create a new datum.",
         "operationId": "DataService_CreateDatum",
         "responses": {
           "200": {
@@ -314,6 +323,7 @@
         ]
       },
       "patch": {
+        "summary": "Update the specified datum with new data.",
         "operationId": "DataService_UpdateDatum",
         "responses": {
           "200": {
@@ -346,6 +356,7 @@
     },
     "/data/share": {
       "post": {
+        "summary": "Share a datum with another user by granting them new permission(s) on it.",
         "operationId": "DataService_ShareDatum",
         "responses": {
           "200": {
@@ -378,6 +389,7 @@
     },
     "/user": {
       "get": {
+        "summary": "Get the information of the user with the given username or user id.\nIf the user is the logged in user, the private user information is\nincluded.",
         "operationId": "AccountService_GetUser",
         "responses": {
           "200": {
@@ -537,7 +549,7 @@
         "RSA"
       ],
       "default": "UNKNOWN_A_ENCRYPTION_ALGORITHM",
-      "description": "An enumeration of different asymmetric encryption algorithms.\n\n - RSA: Encrypt/Decrypt using RSA, using OAEP padding."
+      "description": "An enumeration of different asymmetric encryption algorithms.\n\n - RSA: Encrypt/Decrypt using RSA with OAEP padding."
     },
     "apiAccessToken": {
       "type": "object",
@@ -560,6 +572,7 @@
         },
         "salt": {
           "type": "string",
+          "format": "byte",
           "description": "The salt used in the new hashed password."
         },
         "password_hash_algorithm": {
@@ -590,6 +603,7 @@
         },
         "private_key_key_salt": {
           "type": "string",
+          "format": "byte",
           "description": "The salt used in generating the key for encrypting/decrypting the private key."
         },
         "private_key_key_hash_algorithm": {
@@ -754,13 +768,12 @@
       "type": "string",
       "enum": [
         "UNKNOWN_HASH_ALGORITHM",
-        "BCRYPT",
         "SCRYPT",
         "PBKDF2_SHA_512",
         "ARGON2"
       ],
       "default": "UNKNOWN_HASH_ALGORITHM",
-      "description": "An enumeration of different password hashing algorithms.\n\n - BCRYPT: Hash the utf-8 encoded password and utf-8 encoded salt using bcrypt with a cost of 10.\n - SCRYPT: Hash the utf-8 encoded password and utf-8 encoded salt using scrypt with N=16384, r=8, p=1, and derived key length = 256 bits\n - PBKDF2_SHA_512: Hash the utf-8 encoded password and utf-8 encoded salt using PBKDF2 with SHA512, 20000 iterations, and a derived key length of 256 bits\n - ARGON2: Hash the utf-8 encoded password and utf-8 encoded salt using Argon2id, with t=75, m=1024, p=1, T=32 (derived key length of 256 bits)."
+      "description": "An enumeration of different password hashing algorithms.\n\n - SCRYPT: Hash the utf-8 encoded password and utf-8 encoded salt using scrypt with N=16384, r=8, p=1, and derived key length = 256 bits\n - PBKDF2_SHA_512: Hash the utf-8 encoded password and utf-8 encoded salt using PBKDF2 with SHA512, 20000 iterations, and a derived key length of 256 bits\n - ARGON2: Hash the utf-8 encoded password and utf-8 encoded salt using Argon2id, with t=75, m=1024, p=1, T=32 (derived key length of 256 bits)."
     },
     "apiJWT": {
       "type": "object",
@@ -833,6 +846,7 @@
         },
         "private_key_key_salt": {
           "type": "string",
+          "format": "byte",
           "description": "The salt used in generating the key for encrypting/decrypting the private key."
         },
         "private_key_key_hash_algorithm": {
@@ -860,6 +874,7 @@
         },
         "password_salt": {
           "type": "string",
+          "format": "byte",
           "description": "The salt used to hash the user's password."
         },
         "password_hash_algorithm": {
@@ -907,7 +922,7 @@
         "AES_256_GCM"
       ],
       "default": "UNKNOWN_S_ENCRYPTION_ALGORITHM",
-      "description": "An enumeration of different symmetric encryption algorithms.\n\n - AES_256_CBC: Encrypt using AES-256 with a given key and initialization vector, using CBC and PKCS7 padding. If the key is longer than 256 bits, it is truncated to 256. If it is shorter, it is zero-padded.\n - AES_256_GCM: Encrypt using AES-256 with a given key and initialization vector, using GCM. If the key is longer than 256 bits, it is truncated to 256. If it is shorter, it is zero-padded."
+      "description": "An enumeration of different symmetric encryption algorithms.\n\n - AES_256_CBC: Encrypt using AES-256 with a given key and initialization vector, using CBC and PKCS7 padding. If the key is longer than 256 bits or the iv is longer than 128 bits, they are truncated. If they are shorter, they are zero-padded.\n - AES_256_GCM: Encrypt using AES-256 with a given key and initialization vector, using GCM and having a 16-byte authentication tag appended to the cyphertext. If the key is longer than 256 bits or the iv is longer than 128 bits, they are truncated. If they are shorter, they are zero-padded."
     },
     "apiSendVerificationRequest": {
       "type": "object",
@@ -1027,10 +1042,6 @@
           "$ref": "#/definitions/apiESecret",
           "description": "The new actual data of the datum, such as a password or code, encrypted.\nThis should decrypt to a string of a json object."
         },
-        "data_encryption_algorithm": {
-          "$ref": "#/definitions/apiSEncryptionAlgorithm",
-          "description": "The new encryption algorithm used to encrypt the actual data."
-        },
         "data_iv": {
           "type": "string",
           "format": "byte",
@@ -1064,6 +1075,7 @@
         },
         "new_salt": {
           "type": "string",
+          "format": "byte",
           "description": "The salt used in the new hashed password."
         },
         "new_password_hash_algorithm": {
@@ -1085,6 +1097,7 @@
         },
         "private_key_key_salt": {
           "type": "string",
+          "format": "byte",
           "description": "The new salt used in generating the key for encrypting/decrypting the private key."
         },
         "private_key_key_hash_algorithm": {

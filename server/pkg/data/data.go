@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"fmt"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -52,6 +53,7 @@ func (s *Server) GetData(ctx context.Context, request *api.GetDataRequest) (*api
 }
 
 func (s *Server) UpdateDatum(ctx context.Context, request *api.UpdateDatumRequest) (*api.UpdateDatumResponse, error) {
+	fmt.Println(request)
 	startTime := time.Now()
 
 	// validate the request and authenticate the user before doing anything
@@ -77,7 +79,6 @@ func (s *Server) UpdateDatum(ctx context.Context, request *api.UpdateDatumReques
 	newDatum.Title = request.Title
 	newDatum.Data = request.Data.Data
 	newDatum.DataIv = request.DataIv
-	newDatum.DataEncryptionAlgorithm = request.DataEncryptionAlgorithm
 	newDatum.Metadata.LastEdited = startTime
 
 	err = s.database.updateDatum(ctx, &newDatum, request.Id)
