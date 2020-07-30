@@ -25,7 +25,7 @@ func TestGetUser(t *testing.T) {
 		Username: "liam923",
 		Password: password{
 			Hash:          []byte("hash"),
-			Salt:          "salt",
+			Salt:          []byte("salt"),
 			HashAlgorithm: 0,
 		},
 		Keys: keys{
@@ -41,7 +41,7 @@ func TestGetUser(t *testing.T) {
 		Username: "otherdude",
 		Password: password{
 			Hash:          []byte("hashed"),
-			Salt:          "salty",
+			Salt:          []byte("salty"),
 			HashAlgorithm: 0,
 		},
 		Keys: keys{
@@ -202,7 +202,7 @@ func TestGetUser(t *testing.T) {
 					expectedUser.Public.DataEncryptionAlgorithm != response.User.Public.DataEncryptionAlgorithm ||
 					bytes.Compare(expectedUser.Public.PublicKey, response.User.Public.PublicKey) != 0 ||
 					expectedUser.Public.PasswordHashAlgorithm != response.User.Public.PasswordHashAlgorithm ||
-					expectedUser.Public.PasswordSalt != response.User.Public.PasswordSalt ||
+					bytes.Compare(expectedUser.Public.PasswordSalt, response.User.Public.PasswordSalt) != 0 ||
 					(expectedUser.Private == nil && response.User.Private != nil) ||
 					(expectedUser.Private != nil && (bytes.Compare(expectedUser.Private.PrivateKey.Data, response.User.Private.PrivateKey.Data) != 0 ||
 						expectedUser.Private.PrivateKeyEncryptionAlgorithm != response.User.Private.PrivateKeyEncryptionAlgorithm)) {

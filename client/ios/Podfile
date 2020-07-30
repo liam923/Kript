@@ -1,0 +1,16 @@
+platform :ios, '13.0'
+
+inhibit_all_warnings!
+
+target 'Kript' do
+  use_frameworks!
+
+  pod 'CatCrypto', '~> 0.3.2'
+  pod 'SwiftyRSA', '~> 1.5.0'
+
+  target 'KriptTests' do
+    inherit! :search_paths
+    
+  end
+
+end

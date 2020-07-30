@@ -1,0 +1,6 @@
+framework module Pods_Kript {
+  umbrella header "Pods-Kript-umbrella.h"
+
+  export *
+  module * { export * }
+}

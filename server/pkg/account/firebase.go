@@ -14,7 +14,7 @@ const firestoreTag = "firestore"
 
 type password struct {
 	Hash          []byte            `firestore:"hash,omitempty"`
-	Salt          string            `firestore:"salt,omitempty"`
+	Salt          []byte            `firestore:"salt,omitempty"`
 	HashAlgorithm api.HashAlgorithm `firestore:"hashAlgorithm,omitempty"`
 }
 
@@ -23,7 +23,7 @@ type keys struct {
 	PrivateKey                    []byte                   `firestore:"privateKey,omitempty"`
 	PrivateKeyEncryptionAlgorithm api.SEncryptionAlgorithm `firestore:"privateKeyEncryptionAlgorithm,omitempty"`
 	PrivateKeyIv                  []byte                   `firestore:"privateKeyIv,omitempty"`
-	PrivateKeyKeySalt             string                   `firestore:"privateKeyKeySalt,omitempty"`
+	PrivateKeyKeySalt             []byte                   `firestore:"privateKeyKeySalt,omitempty"`
 	PrivateKeyKeyHashAlgorithm    api.HashAlgorithm        `firestore:"privateKeyKeyHashAlgorithm,omitempty"`
 	DataEncryptionAlgorithm       api.AEncryptionAlgorithm `firestore:"dataEncryptionAlgorithm,omitempty"`
 }
