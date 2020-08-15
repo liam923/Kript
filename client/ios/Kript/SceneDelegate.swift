@@ -23,15 +23,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         
         let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        let accountChannel = ClientConnection
-            .insecure(group: group)
-            .connect(host: "localhost", port: 9232)
-        let dataChannel = ClientConnection
-        .insecure(group: group)
-        .connect(host: "localhost", port: 9233)
+        let channel = ClientConnection
+            .secure(group: group)
+            .connect(host: "grpc.kript.us", port: 443)
         
-        let accountClient = Kript_Api_AccountServiceClient(channel: accountChannel, defaultCallOptions: CallOptions(timeLimit: TimeLimit.timeout(.minutes(1))))
-        let dataClient = Kript_Api_DataServiceClient(channel: dataChannel, defaultCallOptions: CallOptions(timeLimit: TimeLimit.timeout(.minutes(1))))
+        let accountClient = Kript_Api_AccountServiceClient(channel: channel, defaultCallOptions: CallOptions(timeLimit: TimeLimit.timeout(.minutes(1))))
+        let dataClient = Kript_Api_DataServiceClient(channel: channel, defaultCallOptions: CallOptions(timeLimit: TimeLimit.timeout(.minutes(1))))
         
         let manager = Manager(keychain: KeychainSwift(), accountClient: accountClient, dataClient: dataClient)
         let contentView = ContentView(manager: manager, user: manager.loadUser())
