@@ -8,9 +8,13 @@ import (
 	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"time"
 )
 
-const firestoreTag = "firestore"
+const (
+	firestoreTag     = "firestore"
+	firestoreTimeout = time.Minute
+)
 
 type password struct {
 	Hash          []byte            `firestore:"hash,omitempty"`
@@ -85,6 +89,8 @@ type fs struct {
 }
 
 func (s *fs) fetchUserById(ctx context.Context, userId string) (*user, error) {
+	ctx, _ = context.WithTimeout(ctx, firestoreTimeout)
+
 	doc, err := s.db.Doc(userId).Get(ctx)
 	user := &user{}
 	if err == nil {
@@ -98,6 +104,8 @@ func (s *fs) fetchUserById(ctx context.Context, userId string) (*user, error) {
 }
 
 func (s *fs) fetchUserByUsername(ctx context.Context, username string) (*user, string, error) {
+	ctx, _ = context.WithTimeout(ctx, firestoreTimeout)
+
 	iter := s.db.Where("username", "==", username).Limit(1).Documents(ctx)
 	doc, err := iter.Next()
 	if err == nil {
@@ -114,6 +122,8 @@ func (s *fs) fetchUserByUsername(ctx context.Context, username string) (*user, s
 }
 
 func (s *fs) isUsernameAvailable(ctx context.Context, username string) (bool, error) {
+	ctx, _ = context.WithTimeout(ctx, firestoreTimeout)
+
 	iter := s.db.Where("username", "==", username).Limit(1).Documents(ctx)
 	_, err := iter.Next()
 	if err == iterator.Done {
@@ -126,6 +136,8 @@ func (s *fs) isUsernameAvailable(ctx context.Context, username string) (bool, er
 }
 
 func (s *fs) updateUser(ctx context.Context, userId string, user *user) error {
+	ctx, _ = context.WithTimeout(ctx, firestoreTimeout)
+
 	data, err := encode.ToMap(*user, firestoreTag)
 	if err != nil {
 		return richError(err)
@@ -136,6 +148,8 @@ func (s *fs) updateUser(ctx context.Context, userId string, user *user) error {
 }
 
 func (s *fs) createUser(ctx context.Context, user *user) (userId string, err error) {
+	ctx, _ = context.WithTimeout(ctx, firestoreTimeout)
+
 	data, err := encode.ToMap(*user, firestoreTag)
 	if err != nil {
 		return "", richError(err)
