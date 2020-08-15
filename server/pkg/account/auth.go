@@ -1,10 +1,12 @@
 package account
 
 import (
-	"bytes"
 	"context"
 	"github.com/liam923/Kript/server/internal/jwt"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
+	"golang.org/x/crypto/bcrypt"
+
+	//"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"time"
@@ -33,7 +35,7 @@ func (s *Server) LoginUser(ctx context.Context, request *api.LoginUserRequest) (
 		return nil, err
 	}
 
-	if bytes.Compare(user.Password.Hash, request.Password.Data) != 0 {
+	if bcrypt.CompareHashAndPassword(user.Password.Hash, request.Password.Data) != nil {
 		return nil, status.Error(codes.Unauthenticated, "incorrect password")
 	}
 
@@ -93,7 +95,7 @@ func (s *Server) RefreshAuth(ctx context.Context, request *api.RefreshAuthReques
 		return nil, status.Error(codes.Unauthenticated, "invalid access token")
 	}
 	if tokenType != jwt.RefreshTokenType {
-		return nil, status.Errorf(codes.InvalidArgument, "incorrect token type: %s", tokenType)
+		return nil, status.Errorf(codes.Unauthenticated, "incorrect token type: %s", tokenType)
 	}
 
 	accessToken, _, err := s.signer.CreateAndSignJWT(userId, time.Now().Add(s.accessTokenLife), jwt.AccessTokenType)

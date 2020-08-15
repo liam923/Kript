@@ -7,6 +7,7 @@ import (
 	"github.com/liam923/Kript/server/internal/generate"
 	"github.com/liam923/Kript/server/internal/jwt"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/grpclog"
 	"testing"
 )
@@ -47,6 +48,11 @@ func TestLoginUser(t *testing.T) {
 	// Initialize server
 	server := createServer(t, db)
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password"), 5)
+	if err != nil {
+		t.Errorf("error generating password hash: %s", err)
+	}
+
 	// Create test table
 	tests := []struct {
 		testName string
@@ -84,7 +90,7 @@ func TestLoginUser(t *testing.T) {
 			user: &user{
 				Username: "liam923",
 				Password: password{
-					Hash:          []byte("password"),
+					Hash:          hashedPassword,
 					Salt:          []byte("salt"),
 					HashAlgorithm: 0,
 				},
@@ -109,7 +115,7 @@ func TestLoginUser(t *testing.T) {
 			testName: "validPassword login username",
 			request: api.LoginUserRequest{
 				UserIdentifier: &api.LoginUserRequest_Username{"liams923"},
-				Password:       &api.HString{Data: []byte("hashed")},
+				Password:       &api.HString{Data: []byte("password")},
 			},
 			isCorrectPassword: true,
 			twoFactorOptions:  nil,
@@ -117,7 +123,7 @@ func TestLoginUser(t *testing.T) {
 			user: &user{
 				Username: "liams923",
 				Password: password{
-					Hash:          []byte("hashed"),
+					Hash:          hashedPassword,
 					Salt:          []byte("salty"),
 					HashAlgorithm: 0,
 				},
@@ -159,14 +165,14 @@ func TestLoginUser(t *testing.T) {
 			testName: "incorrect password userId",
 			request: api.LoginUserRequest{
 				UserIdentifier: &api.LoginUserRequest_UserId{"1234567890"},
-				Password:       &api.HString{Data: []byte("password")},
+				Password:       &api.HString{Data: []byte("passwords")},
 			},
 			twoFactorOptions: nil,
 			ctx:              context.Background(),
 			user: &user{
 				Username: "liam923",
 				Password: password{
-					Hash:          []byte("PASSWORD"),
+					Hash:          hashedPassword,
 					Salt:          []byte("salt"),
 					HashAlgorithm: 0,
 				},
@@ -185,7 +191,7 @@ func TestLoginUser(t *testing.T) {
 			testName: "incorrect password username",
 			request: api.LoginUserRequest{
 				UserIdentifier: &api.LoginUserRequest_Username{"liam923"},
-				Password:       &api.HString{Data: []byte("hashed")},
+				Password:       &api.HString{Data: []byte("PASSWORD")},
 			},
 			twoFactorOptions: []api.TwoFactor{
 				{
@@ -198,7 +204,7 @@ func TestLoginUser(t *testing.T) {
 			user: &user{
 				Username: "liam923",
 				Password: password{
-					Hash:          []byte("nothashed"),
+					Hash:          hashedPassword,
 					Salt:          []byte("salty"),
 					HashAlgorithm: 0,
 				},

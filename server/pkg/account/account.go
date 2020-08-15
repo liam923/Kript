@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"context"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+const hashStrength = 12
 
 func (s *Server) UpdatePassword(ctx context.Context, request *api.UpdatePasswordRequest) (*api.UpdatePasswordResponse, error) {
 	if request == nil || request.OldPassword == nil || request.NewPassword == nil || request.PrivateKey == nil {
@@ -73,10 +76,15 @@ func (s *Server) CreateAccount(ctx context.Context, request *api.CreateAccountRe
 		return nil, status.Errorf(codes.AlreadyExists, "username %s not available", request.Username)
 	}
 
+	hashHash, err := bcrypt.GenerateFromPassword(request.Password.Data, hashStrength)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "an internal error occurred")
+	}
+
 	user := user{
 		Username: request.Username,
 		Password: password{
-			Hash:          request.Password.Data,
+			Hash:          hashHash,
 			Salt:          request.Salt,
 			HashAlgorithm: request.PasswordHashAlgorithm,
 		},

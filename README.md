@@ -24,7 +24,7 @@ Each of the following sections describe a different component of the encryption 
 
 ### User password
 
-The user's password is the top level key for all access. All decryption paths start using the user's password. The password is never sent to and subsequently stored on the server. Rather, a salted, hashed password is used for authentication so that the password never leaves the user's device. The password salt and the hash algorithm are publicly accessible by calling `kript.api.AccountService/GetUser`.
+The user's password is the top level key for all access. All decryption paths start using the user's password. The password is never sent to and subsequently stored on the server. Rather, a salted, hashed password is used for authentication so that the password never leaves the user's device. This hashed password is then hashed again with Bcrypt, which is stored in the database. This is necessary due to the initial hash being client-side. The password salt and the hash algorithm are publicly accessible by calling `kript.api.AccountService/GetUser`.
 
 ### User symmetric key
 

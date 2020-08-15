@@ -22,7 +22,6 @@ func (u *userMatcher) Matches(x interface{}) bool {
 	switch v := x.(type) {
 	case *user:
 		if u.user.Username == v.Username &&
-			bytes.Compare(u.user.Password.Hash, v.Password.Hash) == 0 &&
 			u.user.Password.HashAlgorithm == v.Password.HashAlgorithm &&
 			bytes.Compare(u.user.Password.Salt, v.Password.Salt) == 0 &&
 			bytes.Compare(u.user.Keys.PublicKey, v.Keys.PublicKey) == 0 &&

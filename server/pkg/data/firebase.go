@@ -14,7 +14,10 @@ import (
 	"time"
 )
 
-const firestoreTag = "firestore"
+const (
+	firestoreTag     = "firestore"
+	firestoreTimeout = time.Minute
+)
 
 type accessor struct {
 	UserId      string           `firestore:"userId,omitempty"`
@@ -121,6 +124,8 @@ type fs struct {
 }
 
 func (s *fs) fetchDatum(ctx context.Context, id string) (*datum, error) {
+	ctx, _ = context.WithTimeout(ctx, firestoreTimeout)
+
 	doc, err := s.db.Doc(id).Get(ctx)
 	if err != nil {
 		return nil, richError(err)
@@ -134,6 +139,8 @@ func (s *fs) fetchDatum(ctx context.Context, id string) (*datum, error) {
 }
 
 func (s *fs) fetchDataForUser(ctx context.Context, userId string) (data *[]idedDatum, err error) {
+	ctx, _ = context.WithTimeout(ctx, firestoreTimeout)
+
 	permissionsPath := fmt.Sprintf("accessors.%s.permissions", userId)
 	permissions := []api.Permission{
 		api.Permission_READ,
@@ -170,6 +177,8 @@ func (s *fs) fetchDataForUser(ctx context.Context, userId string) (data *[]idedD
 }
 
 func (s *fs) createDatum(ctx context.Context, datum *datum) (id string, err error) {
+	ctx, _ = context.WithTimeout(ctx, firestoreTimeout)
+
 	data, err := encode.ToMap(*datum, firestoreTag)
 	if err != nil {
 		return "", richError(err)
@@ -184,6 +193,8 @@ func (s *fs) createDatum(ctx context.Context, datum *datum) (id string, err erro
 }
 
 func (s *fs) updateDatum(ctx context.Context, datum *datum, id string) error {
+	ctx, _ = context.WithTimeout(ctx, firestoreTimeout)
+
 	data, err := encode.ToMap(*datum, firestoreTag)
 	if err != nil {
 		return richError(err)
@@ -194,6 +205,8 @@ func (s *fs) updateDatum(ctx context.Context, datum *datum, id string) error {
 }
 
 func (s *fs) deleteDatum(ctx context.Context, id string) error {
+	ctx, _ = context.WithTimeout(ctx, firestoreTimeout)
+
 	_, err := s.db.Doc(id).Delete(ctx)
 	return richError(err)
 }
