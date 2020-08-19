@@ -248,17 +248,16 @@ struct DatumListView_Previews: PreviewProvider {
         
         var body: some View {
             var datums = [Datum(), Datum(), Datum(), Datum()]
-            datums[0].title = "Datum 1"
             datums[0].secret.password = Kript_Api_Secret.Password()
             datums[0].secret.password.url = "google.com"
             datums[0].secret.password.password = "secret123"
-            datums[1].title = "Datum 2"
+            
             datums[1].secret.creditCard = Kript_Api_Secret.CreditCard()
             datums[1].secret.creditCard.description_p = "Visa"
-            datums[2].title = "Datum 3"
+            
             datums[2].secret.note = Kript_Api_Secret.Note()
             datums[2].secret.note.text = "birthday is 9/23/99"
-            datums[3].title = "Datum 4"
+            
             datums[3].secret.code = Kript_Api_Secret.Code()
             datums[3].secret.code.description_p = "Bank Number"
             let store = Store(datums: datums)

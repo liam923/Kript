@@ -76,7 +76,6 @@ func (s *Server) UpdateDatum(ctx context.Context, request *api.UpdateDatumReques
 	}
 
 	newDatum := *oldDatum
-	newDatum.Title = request.Title
 	newDatum.Data = request.Data.Data
 	newDatum.DataIv = request.DataIv
 	newDatum.Metadata.LastEdited = startTime
@@ -104,7 +103,6 @@ func (s *Server) CreateDatum(ctx context.Context, request *api.CreateDatumReques
 
 	newDatum := datum{
 		Owner:                   userId,
-		Title:                   request.Title,
 		Data:                    request.Data.Data,
 		DataEncryptionAlgorithm: request.DataEncryptionAlgorithm,
 		DataIv:                  request.DataIv,

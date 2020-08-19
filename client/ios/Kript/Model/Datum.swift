@@ -14,7 +14,6 @@ struct Datum: Identifiable {
     
     var datum: Kript_Api_Datum?
     var secret: Kript_Api_Secret
-    var title: String
     
     init?(fromCD datum: CDDatum, user: User) {
         guard let datum = try? datum.getProto(),
@@ -25,13 +24,11 @@ struct Datum: Identifiable {
         self.id = UUID()
         self.datum = datum
         self.secret = secret
-        self.title = datum.title
     }
     
     init(datum: Kript_Api_Datum? = nil, secret: Kript_Api_Secret = Kript_Api_Secret(), id: UUID? = nil) {
         self.id = id ?? UUID()
         self.datum = datum
         self.secret = secret
-        self.title = datum?.title ?? ""
     }
 }

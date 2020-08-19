@@ -23,8 +23,6 @@ message Datum {
   string id = 1;
   // The owner of this datum.
   string owner = 2;
-  // The title of this datum, given by the user.
-  string title = 3;
   // The actual data of this datum, such as a password or code, encrypted.
   ESecret data = 4;
   // The encryption algorithm used to encrypt the actual data.

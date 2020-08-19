@@ -74,7 +74,6 @@ func TestGetData(t *testing.T) {
 					id: "1",
 					datum: datum{
 						Owner:                   "liam923",
-						Title:                   "DATA",
 						Data:                    []byte("23dyoirbeu9"),
 						DataEncryptionAlgorithm: 0,
 						Accessors: map[string]accessor{
@@ -92,7 +91,6 @@ func TestGetData(t *testing.T) {
 					id: "2",
 					datum: datum{
 						Owner:                   "other person",
-						Title:                   "TITLE",
 						Data:                    []byte("saofinfwuoirc"),
 						DataEncryptionAlgorithm: 0,
 						Accessors: map[string]accessor{
@@ -124,7 +122,6 @@ func TestGetData(t *testing.T) {
 						Id: "1",
 						Datum: datum{
 							Owner:                   "liam923",
-							Title:                   "DATA",
 							Data:                    []byte("23dyoirbeu9"),
 							DataEncryptionAlgorithm: 0,
 							Accessors: map[string]accessor{
@@ -141,7 +138,6 @@ func TestGetData(t *testing.T) {
 						Id: "2",
 						Datum: datum{
 							Owner:                   "other person",
-							Title:                   "TITLE",
 							Data:                    []byte("saofinfwuoirc"),
 							DataEncryptionAlgorithm: 0,
 							Accessors: map[string]accessor{
@@ -177,7 +173,6 @@ func TestGetData(t *testing.T) {
 					id: "1",
 					datum: datum{
 						Owner:                   "liam923",
-						Title:                   "DATA",
 						Data:                    []byte("23dyoirbeu9"),
 						DataEncryptionAlgorithm: 0,
 						Accessors: map[string]accessor{
@@ -216,7 +211,6 @@ func TestGetData(t *testing.T) {
 					id: "1",
 					datum: datum{
 						Owner:                   "liam923",
-						Title:                   "DATA",
 						Data:                    []byte("23dyoirbeu9"),
 						DataEncryptionAlgorithm: 0,
 						Accessors: map[string]accessor{
@@ -234,7 +228,6 @@ func TestGetData(t *testing.T) {
 					id: "2",
 					datum: datum{
 						Owner:                   "other person",
-						Title:                   "TITLE",
 						Data:                    []byte("saofinfwuoirc"),
 						DataEncryptionAlgorithm: 0,
 						Accessors: map[string]accessor{
@@ -301,7 +294,6 @@ func TestGetData(t *testing.T) {
 						expected.Owner != actual.Owner ||
 						bytes.Compare(expected.Data, actual.Data.Data) != 0 ||
 						expected.DataEncryptionAlgorithm != actual.DataEncryptionAlgorithm ||
-						expected.Title != actual.Title ||
 						len(expected.Accessors) != len(actual.Accessors) {
 						t.Errorf("unexpected response: %v", response)
 					}
@@ -357,8 +349,7 @@ type partialDatumMatcher struct {
 
 func (p partialDatumMatcher) Matches(x interface{}) bool {
 	if q, ok := x.(*datum); ok {
-		return p.datum.Title == q.Title &&
-			bytes.Compare(p.datum.Data, q.Data) == 0 &&
+		return bytes.Compare(p.datum.Data, q.Data) == 0 &&
 			len(p.datum.Accessors) == len(q.Accessors) &&
 			p.datum.Owner == q.Owner
 	}
@@ -404,7 +395,6 @@ func TestUpdateDatum(t *testing.T) {
 				id: "1",
 				datum: datum{
 					Owner:                   "liam923",
-					Title:                   "DATA",
 					Data:                    []byte("23dyoirbeu9"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
@@ -447,7 +437,6 @@ func TestUpdateDatum(t *testing.T) {
 				id: "2",
 				datum: datum{
 					Owner:                   "other person",
-					Title:                   "TITLE",
 					Data:                    []byte("saofinfwuoirc"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
@@ -480,7 +469,6 @@ func TestUpdateDatum(t *testing.T) {
 				id: "2",
 				datum: datum{
 					Owner:                   "liam923",
-					Title:                   "TITLE",
 					Data:                    []byte("saofinfwuoirc"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
@@ -512,7 +500,6 @@ func TestUpdateDatum(t *testing.T) {
 
 			if tt.fetchDatum.err == nil {
 				expectedDatum := tt.fetchDatum.datum
-				expectedDatum.Title = tt.request.Title
 				expectedDatum.Data = tt.request.Data.Data
 				expectedDatum.DataIv = tt.request.DataIv
 				db.EXPECT().
@@ -541,7 +528,6 @@ func TestUpdateDatum(t *testing.T) {
 					expected.Owner != actual.Owner ||
 					bytes.Compare(tt.request.Data.Data, actual.Data.Data) != 0 ||
 					bytes.Compare(tt.request.DataIv, actual.DataIv) != 0 ||
-					tt.request.Title != actual.Title ||
 					len(expected.Accessors) != len(actual.Accessors) {
 					t.Errorf("unexpected response: %v, expected: %v", response, expected)
 				}
@@ -613,7 +599,6 @@ func TestCreateDatum(t *testing.T) {
 			testName: "valid",
 			datum: datum{
 				Owner:                   "liam923",
-				Title:                   "TITLE",
 				Data:                    []byte("DATA"),
 				DataEncryptionAlgorithm: 0,
 				DataIv:                  []byte("suh dude"),
@@ -634,7 +619,6 @@ func TestCreateDatum(t *testing.T) {
 			testName: "create error",
 			datum: datum{
 				Owner:                   "liam923",
-				Title:                   "TITLE",
 				Data:                    []byte("DATA"),
 				DataEncryptionAlgorithm: 0,
 				DataIv:                  []byte("suh dude"),
@@ -663,7 +647,6 @@ func TestCreateDatum(t *testing.T) {
 				AccessToken: &api.AccessToken{
 					Jwt: &api.JWT{Token: validToken},
 				},
-				Title:                   tt.datum.Title,
 				Data:                    &api.ESecret{Data: tt.datum.Data},
 				DataKey:                 &api.EBytes{Data: tt.datum.Accessors["liam923"].DataKey},
 				DataEncryptionAlgorithm: tt.datum.DataEncryptionAlgorithm,
@@ -687,7 +670,6 @@ func TestCreateDatum(t *testing.T) {
 					bytes.Compare(expected.Data, actual.Data.Data) != 0 ||
 					bytes.Compare(expected.DataIv, actual.DataIv) != 0 ||
 					expected.DataEncryptionAlgorithm != actual.DataEncryptionAlgorithm ||
-					expected.Title != actual.Title ||
 					len(expected.Accessors) != len(actual.Accessors) {
 					t.Errorf("unexpected response: %v", response)
 				}
@@ -698,7 +680,6 @@ func TestCreateDatum(t *testing.T) {
 					AccessToken: &api.AccessToken{
 						Jwt: &api.JWT{Token: invalidToken},
 					},
-					Title:                   tt.datum.Title,
 					Data:                    &api.ESecret{Data: tt.datum.Data},
 					DataKey:                 &api.EBytes{Data: tt.datum.Accessors["liam923"].DataKey},
 					DataEncryptionAlgorithm: tt.datum.DataEncryptionAlgorithm,
@@ -783,7 +764,6 @@ func TestDeleteDatum(t *testing.T) {
 				id: "1",
 				datum: datum{
 					Owner:                   "liam923",
-					Title:                   "DATA",
 					Data:                    []byte("23dyoirbeu9"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
@@ -815,7 +795,6 @@ func TestDeleteDatum(t *testing.T) {
 				id: "1",
 				datum: datum{
 					Owner:                   "other person",
-					Title:                   "TITLE",
 					Data:                    []byte("saofinfwuoirc"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
@@ -871,7 +850,6 @@ func TestDeleteDatum(t *testing.T) {
 					expected.Owner != actual.Owner ||
 					bytes.Compare(expected.Data, actual.Data.Data) != 0 ||
 					expected.DataEncryptionAlgorithm != actual.DataEncryptionAlgorithm ||
-					expected.Title != actual.Title ||
 					len(expected.Accessors) != len(actual.Accessors) {
 					t.Errorf("unexpected response: %v", response)
 				}
@@ -953,7 +931,6 @@ func TestShareDatum(t *testing.T) {
 				id: "1",
 				datum: datum{
 					Owner:                   "liam923",
-					Title:                   "DATA",
 					Data:                    []byte("23dyoirbeu9"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
@@ -982,7 +959,6 @@ func TestShareDatum(t *testing.T) {
 				id: "1",
 				datum: datum{
 					Owner:                   "liam923",
-					Title:                   "DATA",
 					Data:                    []byte("23dyoirbeu9"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
@@ -1016,7 +992,6 @@ func TestShareDatum(t *testing.T) {
 				id: "1",
 				datum: datum{
 					Owner:                   "friend",
-					Title:                   "DATA",
 					Data:                    []byte("23dyoirbeu9"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
@@ -1065,7 +1040,6 @@ func TestShareDatum(t *testing.T) {
 				id: "2",
 				datum: datum{
 					Owner:                   "other person",
-					Title:                   "TITLE",
 					Data:                    []byte("saofinfwuoirc"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
@@ -1098,7 +1072,6 @@ func TestShareDatum(t *testing.T) {
 				id: "2",
 				datum: datum{
 					Owner:                   "other person",
-					Title:                   "TITLE",
 					Data:                    []byte("saofinfwuoirc"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
@@ -1142,7 +1115,6 @@ func TestShareDatum(t *testing.T) {
 				id: "2",
 				datum: datum{
 					Owner:                   "liam923",
-					Title:                   "TITLE",
 					Data:                    []byte("saofinfwuoirc"),
 					DataEncryptionAlgorithm: 0,
 					Accessors: map[string]accessor{
@@ -1211,7 +1183,6 @@ func TestShareDatum(t *testing.T) {
 						expected.Owner != actual.Owner ||
 						bytes.Compare(expected.Data, actual.Data.Data) != 0 ||
 						expected.DataEncryptionAlgorithm != actual.DataEncryptionAlgorithm ||
-						expected.Title != actual.Title ||
 						len(expected.Accessors) != len(actual.Accessors) {
 						t.Errorf("unexpected response: %v", response)
 					}
