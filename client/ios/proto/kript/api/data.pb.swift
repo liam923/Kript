@@ -99,9 +99,6 @@ struct Kript_Api_Datum {
   /// The owner of this datum.
   var owner: String = String()
 
-  /// The title of this datum, given by the user.
-  var title: String = String()
-
   /// The actual data of this datum, such as a password or code, encrypted.
   var data: Kript_Api_ESecret {
     get {return _data ?? Kript_Api_ESecret()}
@@ -561,7 +558,6 @@ extension Kript_Api_Datum: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "id"),
     2: .same(proto: "owner"),
-    3: .same(proto: "title"),
     4: .same(proto: "data"),
     5: .standard(proto: "data_encryption_algorithm"),
     6: .standard(proto: "data_iv"),
@@ -574,7 +570,6 @@ extension Kript_Api_Datum: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       switch fieldNumber {
       case 1: try decoder.decodeSingularStringField(value: &self.id)
       case 2: try decoder.decodeSingularStringField(value: &self.owner)
-      case 3: try decoder.decodeSingularStringField(value: &self.title)
       case 4: try decoder.decodeSingularMessageField(value: &self._data)
       case 5: try decoder.decodeSingularEnumField(value: &self.dataEncryptionAlgorithm)
       case 6: try decoder.decodeSingularBytesField(value: &self.dataIv)
@@ -591,9 +586,6 @@ extension Kript_Api_Datum: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     }
     if !self.owner.isEmpty {
       try visitor.visitSingularStringField(value: self.owner, fieldNumber: 2)
-    }
-    if !self.title.isEmpty {
-      try visitor.visitSingularStringField(value: self.title, fieldNumber: 3)
     }
     if let v = self._data {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
@@ -616,7 +608,6 @@ extension Kript_Api_Datum: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   static func ==(lhs: Kript_Api_Datum, rhs: Kript_Api_Datum) -> Bool {
     if lhs.id != rhs.id {return false}
     if lhs.owner != rhs.owner {return false}
-    if lhs.title != rhs.title {return false}
     if lhs._data != rhs._data {return false}
     if lhs.dataEncryptionAlgorithm != rhs.dataEncryptionAlgorithm {return false}
     if lhs.dataIv != rhs.dataIv {return false}

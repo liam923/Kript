@@ -671,10 +671,6 @@
           "type": "string",
           "description": "The owner of this datum."
         },
-        "title": {
-          "type": "string",
-          "description": "The title of this datum, given by the user."
-        },
         "data": {
           "$ref": "#/definitions/apiESecret",
           "description": "The actual data of this datum, such as a password or code, encrypted."

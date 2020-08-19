@@ -340,7 +340,6 @@ class Manager {
             if let (secret, key, iv, encryptionAlgorithm) = user.wrappedValue?.encryptWithNewKey(datum: datum) {
                 var request = Kript_Api_CreateDatumRequest()
                 request.accessToken = accessToken
-                request.title = datum.title
                 request.data = secret
                 request.dataKey = key
                 request.dataEncryptionAlgorithm = encryptionAlgorithm
@@ -378,7 +377,6 @@ class Manager {
                 var request = Kript_Api_UpdateDatumRequest()
                 request.accessToken = accessToken
                 request.id = id
-                request.title = datum.title
                 request.data = secret
                 request.dataIv = iv
                 return request
@@ -493,33 +491,25 @@ class MockManager: Manager {
     
     override func add(datum: Datum, forUser user: Binding<User?>, completion: @escaping Manager.CompletionHandler<Kript_Api_Datum?>) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            var rDatum = Kript_Api_Datum()
-            rDatum.title = datum.title
-            completion(rDatum)
+            completion(Kript_Api_Datum())
         }
     }
     
     override func remove(datum: Datum, forUser user: Binding<User?>, completion: @escaping Manager.CompletionHandler<Kript_Api_Datum?>) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            var rDatum = Kript_Api_Datum()
-            rDatum.title = datum.title
-            completion(rDatum)
+            completion(Kript_Api_Datum())
         }
     }
     
     override func update(datum: Datum, forUser user: Binding<User?>, completion: @escaping Manager.CompletionHandler<Kript_Api_Datum?>) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            var rDatum = Kript_Api_Datum()
-            rDatum.title = datum.title
-            completion(rDatum)
+            completion(Kript_Api_Datum())
         }
     }
     
     override func refresh(store: Binding<Store>, forUser user: Binding<User?>, completion: @escaping Manager.CompletionHandler<Bool>) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            var datums = [Datum(), Datum()]
-            datums[0].title = "Datum 1"
-            datums[1].title = "Datum 2"
+            let datums = [Datum(), Datum()]
             store.wrappedValue = Store(datums: datums)
             completion(true)
         }
