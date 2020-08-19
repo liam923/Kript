@@ -37,6 +37,14 @@ func (af *accountForwarder) GetUser(ctx context.Context, request *api.GetUserReq
 	return af.client.GetUser(ctx, request)
 }
 
+func (af *accountForwarder) AddTwoFactor(ctx context.Context, request *api.AddTwoFactorRequest) (*api.AddTwoFactorResponse, error) {
+	return af.client.AddTwoFactor(ctx, request)
+}
+
+func (af *accountForwarder) VerifyTwoFactor(ctx context.Context, request *api.VerifyTwoFactorRequest) (*api.VerifyTwoFactorResponse, error) {
+	return af.client.VerifyTwoFactor(ctx, request)
+}
+
 func NewAccountForwarder(client api.AccountServiceClient) api.AccountServiceServer {
 	return &accountForwarder{client: client}
 }

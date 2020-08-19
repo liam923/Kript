@@ -97,7 +97,7 @@ func (s *Server) CreateAccount(ctx context.Context, request *api.CreateAccountRe
 			PrivateKeyKeyHashAlgorithm:    request.PrivateKeyKeyHashAlgorithm,
 			DataEncryptionAlgorithm:       request.DataEncryptionAlgorithm,
 		},
-		TwoFactor: make([]twoFactorOption, 0),
+		TwoFactor: make(map[string]twoFactorOption, 0),
 	}
 	userId, err := s.database.createUser(ctx, &user)
 	if err != nil {
@@ -112,4 +112,12 @@ func (s *Server) CreateAccount(ctx context.Context, request *api.CreateAccountRe
 	return &api.CreateAccountResponse{
 		Response: response,
 	}, nil
+}
+
+func (s *Server) AddTwoFactor(ctx context.Context, request *api.AddTwoFactorRequest) (*api.AddTwoFactorResponse, error) {
+	panic("implement me")
+}
+
+func (s *Server) VerifyTwoFactor(ctx context.Context, request *api.VerifyTwoFactorRequest) (*api.VerifyTwoFactorResponse, error) {
+	panic("implement me")
 }

@@ -137,9 +137,8 @@ func TestUpdatePassword(t *testing.T) {
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
-				TwoFactor: []twoFactorOption{
-					{
-						Id:          "id",
+				TwoFactor: map[string]twoFactorOption{
+					"id": {
 						Type:        0,
 						Destination: "123-456-7890",
 					},

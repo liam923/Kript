@@ -33,16 +33,15 @@ type keys struct {
 }
 
 type twoFactorOption struct {
-	Id          string                      `firestore:"id,omitempty"`
-	Type        api.TwoFactor_TwoFactorType `firestore:"type,omitempty"`
-	Destination string                      `firestore:"destination,omitempty"`
+	Type        api.TwoFactorType `firestore:"type,omitempty"`
+	Destination string            `firestore:"destination,omitempty"`
 }
 
 type user struct {
-	Username  string            `firestore:"username,omitempty"`
-	Password  password          `firestore:"password,omitempty"`
-	Keys      keys              `firestore:"keys,omitempty"`
-	TwoFactor []twoFactorOption `firestore:"twoFactorOption,omitempty"`
+	Username  string                     `firestore:"username,omitempty"`
+	Password  password                   `firestore:"password,omitempty"`
+	Keys      keys                       `firestore:"keys,omitempty"`
+	TwoFactor map[string]twoFactorOption `firestore:"twoFactorOption,omitempty"`
 }
 
 func (u user) toApiUser(id string, includePrivate bool) *api.User {

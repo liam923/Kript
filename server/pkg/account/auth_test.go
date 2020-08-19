@@ -61,7 +61,7 @@ func TestLoginUser(t *testing.T) {
 		// Whether or not the password is correct
 		isCorrectPassword bool
 		// Two factors authentication options, or nil if two factor isn't enabled
-		twoFactorOptions []api.TwoFactor
+		twoFactorOptions map[string]api.TwoFactor
 		// The context with which the call should be made
 		ctx context.Context
 		// The user that the database will return, or nil if it doesn't exist
@@ -79,9 +79,8 @@ func TestLoginUser(t *testing.T) {
 				Password:       &api.HString{Data: []byte("password")},
 			},
 			isCorrectPassword: true,
-			twoFactorOptions: []api.TwoFactor{
-				{
-					Id:          "12345",
+			twoFactorOptions: map[string]api.TwoFactor{
+				"12345": {
 					Type:        0,
 					Destination: "email@website.com",
 				},
@@ -100,9 +99,8 @@ func TestLoginUser(t *testing.T) {
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
-				TwoFactor: []twoFactorOption{
-					{
-						Id:          "12345",
+				TwoFactor: map[string]twoFactorOption{
+					"12345": {
 						Type:        0,
 						Destination: "email@website.com",
 					},
@@ -193,9 +191,8 @@ func TestLoginUser(t *testing.T) {
 				UserIdentifier: &api.LoginUserRequest_Username{"liam923"},
 				Password:       &api.HString{Data: []byte("PASSWORD")},
 			},
-			twoFactorOptions: []api.TwoFactor{
-				{
-					Id:          "12345",
+			twoFactorOptions: map[string]api.TwoFactor{
+				"12345": {
 					Type:        0,
 					Destination: "email@website.com",
 				},
@@ -214,9 +211,8 @@ func TestLoginUser(t *testing.T) {
 					PrivateKeyEncryptionAlgorithm: 0,
 					DataEncryptionAlgorithm:       0,
 				},
-				TwoFactor: []twoFactorOption{
-					{
-						Id:          "12345",
+				TwoFactor: map[string]twoFactorOption{
+					"12345": {
 						Type:        0,
 						Destination: "email@website.com",
 					},
@@ -283,9 +279,9 @@ func TestLoginUser(t *testing.T) {
 						if len(options) != len(tt.twoFactorOptions) {
 							t.Errorf("Invalid two factor options: %v", options)
 						}
-						for i, actual := range options {
-							expected := tt.twoFactorOptions[i]
-							if actual.Id != expected.Id || actual.Type != expected.Type || actual.Destination != expected.Destination {
+						for id, actual := range options {
+							if expected, ok := tt.twoFactorOptions[id]; !ok ||
+								actual.Type != expected.Type || actual.Destination != expected.Destination {
 								t.Errorf("Invalid two factor options: %v", options)
 							}
 						}

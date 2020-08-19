@@ -72,23 +72,23 @@ message SuccessfulLoginMessage {
   User user = 3;
 }
 
+// An enumeration of type of two-factor authentication.
+enum TwoFactorType {
+  UNKNOWN_TWO_FACTOR_TYPE = 0;
+  // A code via text message. This method is not yet supported.
+  PHONE_TEXT = 1;
+  // A code via phone call.
+  PHONE_CALL = 2;
+  // A code via email. This method is not yet supported.
+  EMAIL = 3;
+}
+
 // A way to send/receive a two-factor authentication code.
 message TwoFactor {
-  // An enumeration of type of two-factor authentication.
-  enum TwoFactorType {
-    // A code via text message.
-    PHONE_TEXT = 0;
-    // A code via phone call.
-    PHONE_CALL = 1;
-    // A code via email.
-    EMAIL = 2;
-  }
-  // The identifier of this two-factor authentication method.
-  string id = 1;
   // The type of two-factor authentication.
-  TwoFactorType type = 2;
+  TwoFactorType type = 1;
   // Where the two-factor authentication code is sent (phone, email, etc.).
-  string destination = 3;
+  string destination = 2;
 }
 
 service AccountService {
@@ -150,6 +150,23 @@ service AccountService {
       get: "/user"
     };
   }
+
+  // Request to add the given two-factor destination and send a confirmation
+  // code to the two-factor destination.
+  rpc AddTwoFactor (AddTwoFactorRequest) returns (AddTwoFactorResponse) {
+    option (google.api.http) = {
+      post: "/account/two-factor"
+      body: "*"
+    };
+  }
+
+  // Verify a two-factor destination.
+  rpc VerifyTwoFactor (VerifyTwoFactorRequest) returns (VerifyTwoFactorResponse) {
+    option (google.api.http) = {
+      post: "/account/two-factor/verify"
+      body: "*"
+    };
+  }
 }
 
 message LoginUserRequest {
@@ -170,8 +187,9 @@ message LoginUserResponse {
   message TwoFactorInfo {
     // The token used to identify the user through the verification process.
     VerificationToken verification_token = 1;
-    // The options available for two-factor authentication.
-    repeated TwoFactor options = 2;
+    // The options available for two-factor authentication, where the key is the
+    // id of the option.
+    map<string, TwoFactor> options = 2;
   }
   // A response, with the type dependent on whether two-factor authentication
   // is enabled.
@@ -188,8 +206,8 @@ message LoginUserResponse {
 message SendVerificationRequest {
   // The token used to identify the user through the verification process.
   VerificationToken verification_token = 1;
-  // The two-factor authentication option used.
-  TwoFactor option = 2;
+  // The id of the two-factor authentication option used.
+  string two_factor_option_id = 2;
 }
 
 message SendVerificationResponse {
@@ -202,10 +220,8 @@ message SendVerificationResponse {
 message VerifyUserRequest {
   // The token used to identify the user through the verification process.
   VerificationToken verification_token = 1;
-  // The two-factor authentication option used.
-  TwoFactor destination = 2;
   // The two-factor authentication code received on the specified destination.
-  string code = 3;
+  string code = 2;
 }
 
 message VerifyUserResponse {
@@ -296,4 +312,28 @@ message GetUserRequest {
 message GetUserResponse {
   // The information of the specified user.
   User user = 1;
+}
+
+message AddTwoFactorRequest {
+  // The access token to identify and authenticate the user.
+  AccessToken access_token = 1;
+  // The two-factor authentication method to add.
+  TwoFactor two_factor = 2;
+}
+
+message AddTwoFactorResponse {
+  // The token used to identify the user through the verification process.
+  VerificationToken verification_token = 1;
+}
+
+message VerifyTwoFactorRequest {
+  // The token used to identify the user through the verification process.
+  AccessToken verification_token = 1;
+  // The two-factor authentication code received on the specified destination.
+  string code = 2;
+}
+
+message VerifyTwoFactorResponse {
+  // The successfully added two-factor authentication method.
+  TwoFactor two_factor = 1;
 }

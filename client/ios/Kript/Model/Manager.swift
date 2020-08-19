@@ -44,7 +44,7 @@ class Manager {
     
     enum LoginResponse {
         case complete(user: User)
-        case twoFactor(verificationToken: Kript_Api_VerificationToken, options: [Kript_Api_TwoFactor])
+        case twoFactor(verificationToken: Kript_Api_VerificationToken, options: [String: Kript_Api_TwoFactor])
         case badUsername
         case badPassword
         case otherError // connection error, etc
