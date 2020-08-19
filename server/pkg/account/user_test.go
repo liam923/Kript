@@ -50,9 +50,8 @@ func TestGetUser(t *testing.T) {
 			PrivateKeyEncryptionAlgorithm: 0,
 			DataEncryptionAlgorithm:       0,
 		},
-		TwoFactor: []twoFactorOption{
-			{
-				Id:          "email",
+		TwoFactor: map[string]twoFactorOption{
+			"email": {
 				Type:        0,
 				Destination: "email@site.com",
 			},

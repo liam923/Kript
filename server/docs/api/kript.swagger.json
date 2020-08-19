@@ -80,6 +80,72 @@
         ]
       }
     },
+    "/account/two-factor": {
+      "post": {
+        "summary": "Request to add the given two-factor destination and send a confirmation\ncode to the two-factor destination.",
+        "operationId": "AccountService_AddTwoFactor",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiAddTwoFactorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiAddTwoFactorRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AccountService"
+        ]
+      }
+    },
+    "/account/two-factor/verify": {
+      "post": {
+        "summary": "Verify a two-factor destination.",
+        "operationId": "AccountService_VerifyTwoFactor",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiVerifyTwoFactorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiVerifyTwoFactorRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AccountService"
+        ]
+      }
+    },
     "/auth/login": {
       "post": {
         "summary": "Login the user. If the user has 2-factor authentication enabled,\na verification code must be sent with SendVerification to complete the\nlogin process.",
@@ -510,11 +576,11 @@
           "description": "The token used to identify the user through the verification process."
         },
         "options": {
-          "type": "array",
-          "items": {
+          "type": "object",
+          "additionalProperties": {
             "$ref": "#/definitions/apiTwoFactor"
           },
-          "description": "The options available for two-factor authentication."
+          "description": "The options available for two-factor authentication, where the key is the\nid of the option."
         }
       },
       "description": "Represents the relevant information for the two-factor authentication\nprocess to continue."
@@ -532,16 +598,6 @@
       },
       "description": "Metadata associated with a user who had access to this datum at some\npoint."
     },
-    "TwoFactorTwoFactorType": {
-      "type": "string",
-      "enum": [
-        "PHONE_TEXT",
-        "PHONE_CALL",
-        "EMAIL"
-      ],
-      "default": "PHONE_TEXT",
-      "description": "An enumeration of type of two-factor authentication.\n\n - PHONE_TEXT: A code via text message.\n - PHONE_CALL: A code via phone call.\n - EMAIL: A code via email."
-    },
     "apiAEncryptionAlgorithm": {
       "type": "string",
       "enum": [
@@ -556,6 +612,28 @@
       "properties": {
         "jwt": {
           "$ref": "#/definitions/apiJWT"
+        }
+      }
+    },
+    "apiAddTwoFactorRequest": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "$ref": "#/definitions/apiAccessToken",
+          "description": "The access token to identify and authenticate the user."
+        },
+        "two_factor": {
+          "$ref": "#/definitions/apiTwoFactor",
+          "description": "The two-factor authentication method to add."
+        }
+      }
+    },
+    "apiAddTwoFactorResponse": {
+      "type": "object",
+      "properties": {
+        "verification_token": {
+          "$ref": "#/definitions/apiVerificationToken",
+          "description": "The token used to identify the user through the verification process."
         }
       }
     },
@@ -927,9 +1005,9 @@
           "$ref": "#/definitions/apiVerificationToken",
           "description": "The token used to identify the user through the verification process."
         },
-        "option": {
-          "$ref": "#/definitions/apiTwoFactor",
-          "description": "The two-factor authentication option used."
+        "two_factor_option_id": {
+          "type": "string",
+          "description": "The id of the two-factor authentication option used."
         }
       }
     },
@@ -1004,12 +1082,8 @@
     "apiTwoFactor": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "The identifier of this two-factor authentication method."
-        },
         "type": {
-          "$ref": "#/definitions/TwoFactorTwoFactorType",
+          "$ref": "#/definitions/apiTwoFactorType",
           "description": "The type of two-factor authentication."
         },
         "destination": {
@@ -1018,6 +1092,17 @@
         }
       },
       "description": "A way to send/receive a two-factor authentication code."
+    },
+    "apiTwoFactorType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN_TWO_FACTOR_TYPE",
+        "PHONE_TEXT",
+        "PHONE_CALL",
+        "EMAIL"
+      ],
+      "default": "UNKNOWN_TWO_FACTOR_TYPE",
+      "description": "An enumeration of type of two-factor authentication.\n\n - PHONE_TEXT: A code via text message. This method is not yet supported.\n - PHONE_CALL: A code via phone call.\n - EMAIL: A code via email. This method is not yet supported."
     },
     "apiUpdateDatumRequest": {
       "type": "object",
@@ -1133,16 +1218,34 @@
         }
       }
     },
+    "apiVerifyTwoFactorRequest": {
+      "type": "object",
+      "properties": {
+        "verification_token": {
+          "$ref": "#/definitions/apiAccessToken",
+          "description": "The token used to identify the user through the verification process."
+        },
+        "code": {
+          "type": "string",
+          "description": "The two-factor authentication code received on the specified destination."
+        }
+      }
+    },
+    "apiVerifyTwoFactorResponse": {
+      "type": "object",
+      "properties": {
+        "two_factor": {
+          "$ref": "#/definitions/apiTwoFactor",
+          "description": "The successfully added two-factor authentication method."
+        }
+      }
+    },
     "apiVerifyUserRequest": {
       "type": "object",
       "properties": {
         "verification_token": {
           "$ref": "#/definitions/apiVerificationToken",
           "description": "The token used to identify the user through the verification process."
-        },
-        "destination": {
-          "$ref": "#/definitions/apiTwoFactor",
-          "description": "The two-factor authentication option used."
         },
         "code": {
           "type": "string",

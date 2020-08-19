@@ -64,6 +64,16 @@ internal protocol Kript_Api_AccountServiceClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> UnaryCall<Kript_Api_GetUserRequest, Kript_Api_GetUserResponse>
 
+  func addTwoFactor(
+    _ request: Kript_Api_AddTwoFactorRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Kript_Api_AddTwoFactorRequest, Kript_Api_AddTwoFactorResponse>
+
+  func verifyTwoFactor(
+    _ request: Kript_Api_VerifyTwoFactorRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Kript_Api_VerifyTwoFactorRequest, Kript_Api_VerifyTwoFactorResponse>
+
 }
 
 extension Kript_Api_AccountServiceClientProtocol {
@@ -186,6 +196,41 @@ extension Kript_Api_AccountServiceClientProtocol {
   ) -> UnaryCall<Kript_Api_GetUserRequest, Kript_Api_GetUserResponse> {
     return self.makeUnaryCall(
       path: "/kript.api.AccountService/GetUser",
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions
+    )
+  }
+
+  /// Request to add the given two-factor destination and send a confirmation
+  /// code to the two-factor destination.
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to AddTwoFactor.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func addTwoFactor(
+    _ request: Kript_Api_AddTwoFactorRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Kript_Api_AddTwoFactorRequest, Kript_Api_AddTwoFactorResponse> {
+    return self.makeUnaryCall(
+      path: "/kript.api.AccountService/AddTwoFactor",
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions
+    )
+  }
+
+  /// Verify a two-factor destination.
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to VerifyTwoFactor.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func verifyTwoFactor(
+    _ request: Kript_Api_VerifyTwoFactorRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Kript_Api_VerifyTwoFactorRequest, Kript_Api_VerifyTwoFactorResponse> {
+    return self.makeUnaryCall(
+      path: "/kript.api.AccountService/VerifyTwoFactor",
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions
     )

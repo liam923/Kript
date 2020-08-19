@@ -45,10 +45,9 @@ func (s *Server) LoginUser(ctx context.Context, request *api.LoginUserRequest) (
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 
-		options := make([]*api.TwoFactor, len(user.TwoFactor))
-		for i, twoFactor := range user.TwoFactor {
-			options[i] = &api.TwoFactor{
-				Id:          twoFactor.Id,
+		options := make(map[string]*api.TwoFactor, len(user.TwoFactor))
+		for id, twoFactor := range user.TwoFactor {
+			options[id] = &api.TwoFactor{
 				Type:        twoFactor.Type,
 				Destination: twoFactor.Destination,
 			}

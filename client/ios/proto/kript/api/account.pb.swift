@@ -20,6 +20,61 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
+/// An enumeration of type of two-factor authentication.
+enum Kript_Api_TwoFactorType: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+  case unknownTwoFactorType // = 0
+
+  /// A code via text message. This method is not yet supported.
+  case phoneText // = 1
+
+  /// A code via phone call.
+  case phoneCall // = 2
+
+  /// A code via email. This method is not yet supported.
+  case email // = 3
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .unknownTwoFactorType
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unknownTwoFactorType
+    case 1: self = .phoneText
+    case 2: self = .phoneCall
+    case 3: self = .email
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .unknownTwoFactorType: return 0
+    case .phoneText: return 1
+    case .phoneCall: return 2
+    case .email: return 3
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension Kript_Api_TwoFactorType: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Kript_Api_TwoFactorType] = [
+    .unknownTwoFactorType,
+    .phoneText,
+    .phoneCall,
+    .email,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
 /// The public information about a user that is visible to anyone.
 struct Kript_Api_PublicUser {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -210,70 +265,16 @@ struct Kript_Api_TwoFactor {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// The identifier of this two-factor authentication method.
-  var id: String = String()
-
   /// The type of two-factor authentication.
-  var type: Kript_Api_TwoFactor.TwoFactorType = .phoneText
+  var type: Kript_Api_TwoFactorType = .unknownTwoFactorType
 
   /// Where the two-factor authentication code is sent (phone, email, etc.).
   var destination: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  /// An enumeration of type of two-factor authentication.
-  enum TwoFactorType: SwiftProtobuf.Enum {
-    typealias RawValue = Int
-
-    /// A code via text message.
-    case phoneText // = 0
-
-    /// A code via phone call.
-    case phoneCall // = 1
-
-    /// A code via email.
-    case email // = 2
-    case UNRECOGNIZED(Int)
-
-    init() {
-      self = .phoneText
-    }
-
-    init?(rawValue: Int) {
-      switch rawValue {
-      case 0: self = .phoneText
-      case 1: self = .phoneCall
-      case 2: self = .email
-      default: self = .UNRECOGNIZED(rawValue)
-      }
-    }
-
-    var rawValue: Int {
-      switch self {
-      case .phoneText: return 0
-      case .phoneCall: return 1
-      case .email: return 2
-      case .UNRECOGNIZED(let i): return i
-      }
-    }
-
-  }
-
   init() {}
 }
-
-#if swift(>=4.2)
-
-extension Kript_Api_TwoFactor.TwoFactorType: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Kript_Api_TwoFactor.TwoFactorType] = [
-    .phoneText,
-    .phoneCall,
-    .email,
-  ]
-}
-
-#endif  // swift(>=4.2)
 
 struct Kript_Api_LoginUserRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -405,8 +406,9 @@ struct Kript_Api_LoginUserResponse {
     /// Clears the value of `verificationToken`. Subsequent reads from it will return its default value.
     mutating func clearVerificationToken() {self._verificationToken = nil}
 
-    /// The options available for two-factor authentication.
-    var options: [Kript_Api_TwoFactor] = []
+    /// The options available for two-factor authentication, where the key is the
+    /// id of the option.
+    var options: Dictionary<String,Kript_Api_TwoFactor> = [:]
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -433,22 +435,14 @@ struct Kript_Api_SendVerificationRequest {
   /// Clears the value of `verificationToken`. Subsequent reads from it will return its default value.
   mutating func clearVerificationToken() {self._verificationToken = nil}
 
-  /// The two-factor authentication option used.
-  var option: Kript_Api_TwoFactor {
-    get {return _option ?? Kript_Api_TwoFactor()}
-    set {_option = newValue}
-  }
-  /// Returns true if `option` has been explicitly set.
-  var hasOption: Bool {return self._option != nil}
-  /// Clears the value of `option`. Subsequent reads from it will return its default value.
-  mutating func clearOption() {self._option = nil}
+  /// The id of the two-factor authentication option used.
+  var twoFactorOptionID: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
   fileprivate var _verificationToken: Kript_Api_VerificationToken? = nil
-  fileprivate var _option: Kript_Api_TwoFactor? = nil
 }
 
 struct Kript_Api_SendVerificationResponse {
@@ -491,16 +485,6 @@ struct Kript_Api_VerifyUserRequest {
   /// Clears the value of `verificationToken`. Subsequent reads from it will return its default value.
   mutating func clearVerificationToken() {self._verificationToken = nil}
 
-  /// The two-factor authentication option used.
-  var destination: Kript_Api_TwoFactor {
-    get {return _destination ?? Kript_Api_TwoFactor()}
-    set {_destination = newValue}
-  }
-  /// Returns true if `destination` has been explicitly set.
-  var hasDestination: Bool {return self._destination != nil}
-  /// Clears the value of `destination`. Subsequent reads from it will return its default value.
-  mutating func clearDestination() {self._destination = nil}
-
   /// The two-factor authentication code received on the specified destination.
   var code: String = String()
 
@@ -509,7 +493,6 @@ struct Kript_Api_VerifyUserRequest {
   init() {}
 
   fileprivate var _verificationToken: Kript_Api_VerificationToken? = nil
-  fileprivate var _destination: Kript_Api_TwoFactor? = nil
 }
 
 struct Kript_Api_VerifyUserResponse {
@@ -838,9 +821,120 @@ struct Kript_Api_GetUserResponse {
   fileprivate var _user: Kript_Api_User? = nil
 }
 
+struct Kript_Api_AddTwoFactorRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// The access token to identify and authenticate the user.
+  var accessToken: Kript_Api_AccessToken {
+    get {return _accessToken ?? Kript_Api_AccessToken()}
+    set {_accessToken = newValue}
+  }
+  /// Returns true if `accessToken` has been explicitly set.
+  var hasAccessToken: Bool {return self._accessToken != nil}
+  /// Clears the value of `accessToken`. Subsequent reads from it will return its default value.
+  mutating func clearAccessToken() {self._accessToken = nil}
+
+  /// The two-factor authentication method to add.
+  var twoFactor: Kript_Api_TwoFactor {
+    get {return _twoFactor ?? Kript_Api_TwoFactor()}
+    set {_twoFactor = newValue}
+  }
+  /// Returns true if `twoFactor` has been explicitly set.
+  var hasTwoFactor: Bool {return self._twoFactor != nil}
+  /// Clears the value of `twoFactor`. Subsequent reads from it will return its default value.
+  mutating func clearTwoFactor() {self._twoFactor = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _accessToken: Kript_Api_AccessToken? = nil
+  fileprivate var _twoFactor: Kript_Api_TwoFactor? = nil
+}
+
+struct Kript_Api_AddTwoFactorResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// The token used to identify the user through the verification process.
+  var verificationToken: Kript_Api_VerificationToken {
+    get {return _verificationToken ?? Kript_Api_VerificationToken()}
+    set {_verificationToken = newValue}
+  }
+  /// Returns true if `verificationToken` has been explicitly set.
+  var hasVerificationToken: Bool {return self._verificationToken != nil}
+  /// Clears the value of `verificationToken`. Subsequent reads from it will return its default value.
+  mutating func clearVerificationToken() {self._verificationToken = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _verificationToken: Kript_Api_VerificationToken? = nil
+}
+
+struct Kript_Api_VerifyTwoFactorRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// The token used to identify the user through the verification process.
+  var verificationToken: Kript_Api_AccessToken {
+    get {return _verificationToken ?? Kript_Api_AccessToken()}
+    set {_verificationToken = newValue}
+  }
+  /// Returns true if `verificationToken` has been explicitly set.
+  var hasVerificationToken: Bool {return self._verificationToken != nil}
+  /// Clears the value of `verificationToken`. Subsequent reads from it will return its default value.
+  mutating func clearVerificationToken() {self._verificationToken = nil}
+
+  /// The two-factor authentication code received on the specified destination.
+  var code: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _verificationToken: Kript_Api_AccessToken? = nil
+}
+
+struct Kript_Api_VerifyTwoFactorResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// The successfully added two-factor authentication method.
+  var twoFactor: Kript_Api_TwoFactor {
+    get {return _twoFactor ?? Kript_Api_TwoFactor()}
+    set {_twoFactor = newValue}
+  }
+  /// Returns true if `twoFactor` has been explicitly set.
+  var hasTwoFactor: Bool {return self._twoFactor != nil}
+  /// Clears the value of `twoFactor`. Subsequent reads from it will return its default value.
+  mutating func clearTwoFactor() {self._twoFactor = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _twoFactor: Kript_Api_TwoFactor? = nil
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "kript.api"
+
+extension Kript_Api_TwoFactorType: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "UNKNOWN_TWO_FACTOR_TYPE"),
+    1: .same(proto: "PHONE_TEXT"),
+    2: .same(proto: "PHONE_CALL"),
+    3: .same(proto: "EMAIL"),
+  ]
+}
 
 extension Kript_Api_PublicUser: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".PublicUser"
@@ -1091,50 +1185,36 @@ extension Kript_Api_SuccessfulLoginMessage: SwiftProtobuf.Message, SwiftProtobuf
 extension Kript_Api_TwoFactor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".TwoFactor"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "id"),
-    2: .same(proto: "type"),
-    3: .same(proto: "destination"),
+    1: .same(proto: "type"),
+    2: .same(proto: "destination"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       switch fieldNumber {
-      case 1: try decoder.decodeSingularStringField(value: &self.id)
-      case 2: try decoder.decodeSingularEnumField(value: &self.type)
-      case 3: try decoder.decodeSingularStringField(value: &self.destination)
+      case 1: try decoder.decodeSingularEnumField(value: &self.type)
+      case 2: try decoder.decodeSingularStringField(value: &self.destination)
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.id.isEmpty {
-      try visitor.visitSingularStringField(value: self.id, fieldNumber: 1)
-    }
-    if self.type != .phoneText {
-      try visitor.visitSingularEnumField(value: self.type, fieldNumber: 2)
+    if self.type != .unknownTwoFactorType {
+      try visitor.visitSingularEnumField(value: self.type, fieldNumber: 1)
     }
     if !self.destination.isEmpty {
-      try visitor.visitSingularStringField(value: self.destination, fieldNumber: 3)
+      try visitor.visitSingularStringField(value: self.destination, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Kript_Api_TwoFactor, rhs: Kript_Api_TwoFactor) -> Bool {
-    if lhs.id != rhs.id {return false}
     if lhs.type != rhs.type {return false}
     if lhs.destination != rhs.destination {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
-}
-
-extension Kript_Api_TwoFactor.TwoFactorType: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "PHONE_TEXT"),
-    1: .same(proto: "PHONE_CALL"),
-    2: .same(proto: "EMAIL"),
-  ]
 }
 
 extension Kript_Api_LoginUserRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -1246,7 +1326,7 @@ extension Kript_Api_LoginUserResponse.TwoFactorInfo: SwiftProtobuf.Message, Swif
     while let fieldNumber = try decoder.nextFieldNumber() {
       switch fieldNumber {
       case 1: try decoder.decodeSingularMessageField(value: &self._verificationToken)
-      case 2: try decoder.decodeRepeatedMessageField(value: &self.options)
+      case 2: try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMessageMap<SwiftProtobuf.ProtobufString,Kript_Api_TwoFactor>.self, value: &self.options)
       default: break
       }
     }
@@ -1257,7 +1337,7 @@ extension Kript_Api_LoginUserResponse.TwoFactorInfo: SwiftProtobuf.Message, Swif
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     }
     if !self.options.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.options, fieldNumber: 2)
+      try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMessageMap<SwiftProtobuf.ProtobufString,Kript_Api_TwoFactor>.self, value: self.options, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1274,14 +1354,14 @@ extension Kript_Api_SendVerificationRequest: SwiftProtobuf.Message, SwiftProtobu
   static let protoMessageName: String = _protobuf_package + ".SendVerificationRequest"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "verification_token"),
-    2: .same(proto: "option"),
+    2: .standard(proto: "two_factor_option_id"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       switch fieldNumber {
       case 1: try decoder.decodeSingularMessageField(value: &self._verificationToken)
-      case 2: try decoder.decodeSingularMessageField(value: &self._option)
+      case 2: try decoder.decodeSingularStringField(value: &self.twoFactorOptionID)
       default: break
       }
     }
@@ -1291,15 +1371,15 @@ extension Kript_Api_SendVerificationRequest: SwiftProtobuf.Message, SwiftProtobu
     if let v = self._verificationToken {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     }
-    if let v = self._option {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    if !self.twoFactorOptionID.isEmpty {
+      try visitor.visitSingularStringField(value: self.twoFactorOptionID, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Kript_Api_SendVerificationRequest, rhs: Kript_Api_SendVerificationRequest) -> Bool {
     if lhs._verificationToken != rhs._verificationToken {return false}
-    if lhs._option != rhs._option {return false}
+    if lhs.twoFactorOptionID != rhs.twoFactorOptionID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1344,16 +1424,14 @@ extension Kript_Api_VerifyUserRequest: SwiftProtobuf.Message, SwiftProtobuf._Mes
   static let protoMessageName: String = _protobuf_package + ".VerifyUserRequest"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "verification_token"),
-    2: .same(proto: "destination"),
-    3: .same(proto: "code"),
+    2: .same(proto: "code"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       switch fieldNumber {
       case 1: try decoder.decodeSingularMessageField(value: &self._verificationToken)
-      case 2: try decoder.decodeSingularMessageField(value: &self._destination)
-      case 3: try decoder.decodeSingularStringField(value: &self.code)
+      case 2: try decoder.decodeSingularStringField(value: &self.code)
       default: break
       }
     }
@@ -1363,18 +1441,14 @@ extension Kript_Api_VerifyUserRequest: SwiftProtobuf.Message, SwiftProtobuf._Mes
     if let v = self._verificationToken {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     }
-    if let v = self._destination {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }
     if !self.code.isEmpty {
-      try visitor.visitSingularStringField(value: self.code, fieldNumber: 3)
+      try visitor.visitSingularStringField(value: self.code, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Kript_Api_VerifyUserRequest, rhs: Kript_Api_VerifyUserRequest) -> Bool {
     if lhs._verificationToken != rhs._verificationToken {return false}
-    if lhs._destination != rhs._destination {return false}
     if lhs.code != rhs.code {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -1771,6 +1845,134 @@ extension Kript_Api_GetUserResponse: SwiftProtobuf.Message, SwiftProtobuf._Messa
 
   static func ==(lhs: Kript_Api_GetUserResponse, rhs: Kript_Api_GetUserResponse) -> Bool {
     if lhs._user != rhs._user {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Kript_Api_AddTwoFactorRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".AddTwoFactorRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "access_token"),
+    2: .standard(proto: "two_factor"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularMessageField(value: &self._accessToken)
+      case 2: try decoder.decodeSingularMessageField(value: &self._twoFactor)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if let v = self._accessToken {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }
+    if let v = self._twoFactor {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Kript_Api_AddTwoFactorRequest, rhs: Kript_Api_AddTwoFactorRequest) -> Bool {
+    if lhs._accessToken != rhs._accessToken {return false}
+    if lhs._twoFactor != rhs._twoFactor {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Kript_Api_AddTwoFactorResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".AddTwoFactorResponse"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "verification_token"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularMessageField(value: &self._verificationToken)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if let v = self._verificationToken {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Kript_Api_AddTwoFactorResponse, rhs: Kript_Api_AddTwoFactorResponse) -> Bool {
+    if lhs._verificationToken != rhs._verificationToken {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Kript_Api_VerifyTwoFactorRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".VerifyTwoFactorRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "verification_token"),
+    2: .same(proto: "code"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularMessageField(value: &self._verificationToken)
+      case 2: try decoder.decodeSingularStringField(value: &self.code)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if let v = self._verificationToken {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }
+    if !self.code.isEmpty {
+      try visitor.visitSingularStringField(value: self.code, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Kript_Api_VerifyTwoFactorRequest, rhs: Kript_Api_VerifyTwoFactorRequest) -> Bool {
+    if lhs._verificationToken != rhs._verificationToken {return false}
+    if lhs.code != rhs.code {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Kript_Api_VerifyTwoFactorResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".VerifyTwoFactorResponse"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "two_factor"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularMessageField(value: &self._twoFactor)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if let v = self._twoFactor {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Kript_Api_VerifyTwoFactorResponse, rhs: Kript_Api_VerifyTwoFactorResponse) -> Bool {
+    if lhs._twoFactor != rhs._twoFactor {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
