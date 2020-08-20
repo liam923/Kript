@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func (s *Server) GetData(ctx context.Context, request *api.GetDataRequest) (*api.GetDataResponse, error) {
+func (s *server) GetData(ctx context.Context, request *api.GetDataRequest) (*api.GetDataResponse, error) {
 	// validate the request and authenticate the user before doing anything
 	if request == nil || !s.validateAccessTokenFormat(request.AccessToken) {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
@@ -52,7 +52,7 @@ func (s *Server) GetData(ctx context.Context, request *api.GetDataRequest) (*api
 	}, nil
 }
 
-func (s *Server) UpdateDatum(ctx context.Context, request *api.UpdateDatumRequest) (*api.UpdateDatumResponse, error) {
+func (s *server) UpdateDatum(ctx context.Context, request *api.UpdateDatumRequest) (*api.UpdateDatumResponse, error) {
 	fmt.Println(request)
 	startTime := time.Now()
 
@@ -90,7 +90,7 @@ func (s *Server) UpdateDatum(ctx context.Context, request *api.UpdateDatumReques
 	}, nil
 }
 
-func (s *Server) CreateDatum(ctx context.Context, request *api.CreateDatumRequest) (*api.CreateDatumResponse, error) {
+func (s *server) CreateDatum(ctx context.Context, request *api.CreateDatumRequest) (*api.CreateDatumResponse, error) {
 	// validate the request and authenticate the user before doing anything
 	if request == nil || request.Data == nil || request.DataKey == nil ||
 		!s.validateAccessTokenFormat(request.AccessToken) {
@@ -141,7 +141,7 @@ func (s *Server) CreateDatum(ctx context.Context, request *api.CreateDatumReques
 	}, nil
 }
 
-func (s *Server) DeleteDatum(ctx context.Context, request *api.DeleteDatumRequest) (*api.DeleteDatumResponse, error) {
+func (s *server) DeleteDatum(ctx context.Context, request *api.DeleteDatumRequest) (*api.DeleteDatumResponse, error) {
 	// validate the request and authenticate the user before doing anything
 	if request == nil || !s.validateAccessTokenFormat(request.AccessToken) {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
@@ -170,7 +170,7 @@ func (s *Server) DeleteDatum(ctx context.Context, request *api.DeleteDatumReques
 	}, nil
 }
 
-func (s *Server) ShareDatum(ctx context.Context, request *api.ShareDatumRequest) (*api.ShareDatumResponse, error) {
+func (s *server) ShareDatum(ctx context.Context, request *api.ShareDatumRequest) (*api.ShareDatumResponse, error) {
 	// validate the request and authenticate the user before doing anything
 	if request == nil || request.DataKey == nil || !s.validateAccessTokenFormat(request.AccessToken) {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")

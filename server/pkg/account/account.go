@@ -11,7 +11,7 @@ import (
 
 const hashStrength = 12
 
-func (s *Server) UpdatePassword(ctx context.Context, request *api.UpdatePasswordRequest) (*api.UpdatePasswordResponse, error) {
+func (s *server) UpdatePassword(ctx context.Context, request *api.UpdatePasswordRequest) (*api.UpdatePasswordResponse, error) {
 	if request == nil || request.OldPassword == nil || request.NewPassword == nil || request.PrivateKey == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -63,7 +63,7 @@ func (s *Server) UpdatePassword(ctx context.Context, request *api.UpdatePassword
 	}, nil
 }
 
-func (s *Server) CreateAccount(ctx context.Context, request *api.CreateAccountRequest) (*api.CreateAccountResponse, error) {
+func (s *server) CreateAccount(ctx context.Context, request *api.CreateAccountRequest) (*api.CreateAccountResponse, error) {
 	if request == nil || request.Password == nil || request.PrivateKey == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -114,10 +114,10 @@ func (s *Server) CreateAccount(ctx context.Context, request *api.CreateAccountRe
 	}, nil
 }
 
-func (s *Server) AddTwoFactor(ctx context.Context, request *api.AddTwoFactorRequest) (*api.AddTwoFactorResponse, error) {
+func (s *server) AddTwoFactor(ctx context.Context, request *api.AddTwoFactorRequest) (*api.AddTwoFactorResponse, error) {
 	panic("implement me")
 }
 
-func (s *Server) VerifyTwoFactor(ctx context.Context, request *api.VerifyTwoFactorRequest) (*api.VerifyTwoFactorResponse, error) {
+func (s *server) VerifyTwoFactor(ctx context.Context, request *api.VerifyTwoFactorRequest) (*api.VerifyTwoFactorResponse, error) {
 	panic("implement me")
 }

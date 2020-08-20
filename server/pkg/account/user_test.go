@@ -5,8 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/golang/mock/gomock"
-	"github.com/liam923/Kript/server/internal/generate"
-	"github.com/liam923/Kript/server/internal/jwt"
+	"github.com/liam923/Kript/server/internal/secure"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
 	"testing"
 )
@@ -58,7 +57,7 @@ func TestGetUser(t *testing.T) {
 		},
 	}
 
-	validToken, invalidTokens := generate.JWT(server.signer, userId1, jwt.AccessTokenType)
+	validToken, invalidTokens := secure.GenerateJwt(server.signer, userId1, secure.AccessTokenType)
 	tests := []struct {
 		testName string
 		// The identifier of the intended user to be fetched

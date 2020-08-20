@@ -5,8 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/golang/mock/gomock"
-	"github.com/liam923/Kript/server/internal/generate"
-	"github.com/liam923/Kript/server/internal/jwt"
+	"github.com/liam923/Kript/server/internal/secure"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
@@ -15,23 +14,23 @@ import (
 )
 
 // Create a server that writes to a dummy log.
-func createServer(t *testing.T, db database) (Server, jwt.Signer) {
+func createServer(t *testing.T, db database) (server, secure.JwtSigner) {
 	issuerId := "kript.api"
-	keyPair := generate.Keys(4096)
+	keyPair := secure.GenerateKeys(4096)
 	logger := grpclog.NewLoggerV2(&dummyWriter{}, &dummyWriter{}, &dummyWriter{})
-	signer, err := jwt.NewSigner(keyPair.Private, issuerId)
+	signer, err := secure.NewJwtSigner(keyPair.Private, issuerId)
 	if err != nil {
 		t.Errorf("Failed to initialize signer")
 	}
-	validator, err := jwt.NewValidator(keyPair.Public, issuerId)
+	validator, err := secure.NewJwtValidator(keyPair.Public, issuerId)
 	if err != nil {
 		t.Errorf("Failed to initialize validator")
 	}
-	return Server{
+	return server{
 		database:  db,
 		Logger:    &logger,
 		validator: validator,
-	}, *signer
+	}, signer
 }
 
 type dummyWriter struct{}
@@ -46,7 +45,7 @@ func TestGetData(t *testing.T) {
 	// Initialize server
 	server, signer := createServer(t, db)
 
-	validToken, invalidTokens := generate.JWT(&signer, "liam923", jwt.AccessTokenType)
+	validToken, invalidTokens := secure.GenerateJwt(signer, "liam923", secure.AccessTokenType)
 
 	type fetchForUser struct {
 		user string
@@ -368,7 +367,7 @@ func TestUpdateDatum(t *testing.T) {
 	// Initialize server
 	server, signer := createServer(t, db)
 
-	validToken, invalidTokens := generate.JWT(&signer, "liam923", jwt.AccessTokenType)
+	validToken, invalidTokens := secure.GenerateJwt(signer, "liam923", secure.AccessTokenType)
 
 	type fetchDatum struct {
 		id    string
@@ -584,7 +583,7 @@ func TestCreateDatum(t *testing.T) {
 	// Initialize server
 	server, signer := createServer(t, db)
 
-	validToken, invalidTokens := generate.JWT(&signer, "liam923", jwt.AccessTokenType)
+	validToken, invalidTokens := secure.GenerateJwt(signer, "liam923", secure.AccessTokenType)
 
 	type createResponse struct {
 		id  string
@@ -743,7 +742,7 @@ func TestDeleteDatum(t *testing.T) {
 	// Initialize server
 	server, signer := createServer(t, db)
 
-	validToken, invalidTokens := generate.JWT(&signer, "liam923", jwt.AccessTokenType)
+	validToken, invalidTokens := secure.GenerateJwt(signer, "liam923", secure.AccessTokenType)
 
 	type fetchDatum struct {
 		id    string
@@ -903,7 +902,7 @@ func TestShareDatum(t *testing.T) {
 	// Initialize server
 	server, signer := createServer(t, db)
 
-	validToken, invalidTokens := generate.JWT(&signer, "liam923", jwt.AccessTokenType)
+	validToken, invalidTokens := secure.GenerateJwt(signer, "liam923", secure.AccessTokenType)
 
 	type fetchDatum struct {
 		id    string

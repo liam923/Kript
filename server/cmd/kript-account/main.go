@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/liam923/Kript/server/internal/jwt"
+	"github.com/liam923/Kript/server/internal/secure"
 	"github.com/liam923/Kript/server/pkg/account"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
 	"google.golang.org/grpc"
@@ -45,25 +45,25 @@ func main() {
 	s := grpc.NewServer()
 	reflection.Register(s)
 
-	privateKey, err := jwt.ReadRSAKeyFile(*privateJwtKeyPath)
+	privateKey, err := secure.ReadRSAKeyFile(*privateJwtKeyPath)
 	if err != nil {
 		log.Fatalln("Failed to read jwt private key:", err)
 		return
 	}
-	publicKey, err := jwt.ReadRSAKeyFile(*publicJwtKeyPath)
+	publicKey, err := secure.ReadRSAKeyFile(*publicJwtKeyPath)
 	if err != nil {
 		log.Fatalln("Failed to read jwt public key:", err)
 		return
 	}
 
-	accountServer, err := account.NewServer(&log, privateKey, publicKey)
+	accountServer, err := account.Server(&log, privateKey, publicKey)
 	if err != nil {
 		log.Fatalln("Failed to create data database client:", err)
 		return
 	}
 	api.RegisterAccountServiceServer(s, accountServer)
 
-	// Serve gRPC Server
+	// Serve gRPC server
 	log.Info("Serving gRPC on http://", addr)
 	log.Fatal(s.Serve(lis))
 }

@@ -5,8 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/golang/mock/gomock"
-	"github.com/liam923/Kript/server/internal/generate"
-	"github.com/liam923/Kript/server/internal/jwt"
+	"github.com/liam923/Kript/server/internal/secure"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
 	"reflect"
 	"testing"
@@ -56,7 +55,7 @@ func TestUpdatePassword(t *testing.T) {
 	server := createServer(t, db)
 
 	userId := "1234567890"
-	validToken, invalidTokens := generate.JWT(server.signer, userId, jwt.AccessTokenType)
+	validToken, invalidTokens := secure.GenerateJwt(server.signer, userId, secure.AccessTokenType)
 	tests := []struct {
 		testName string
 		// the request to update the password
@@ -406,13 +405,13 @@ func TestCreateAccount(t *testing.T) {
 				if response == nil || err != nil {
 					t.Errorf("unexpected error for validPassword creation: %v", err)
 				} else {
-					userId, tokenType, _, err := server.validator.ValidateJWT(response.Response.RefreshToken.Jwt.Token)
-					if err != nil || userId != tt.userId || tokenType != jwt.RefreshTokenType {
+					userId, tokenType, _, err := server.validator.Validate(response.Response.RefreshToken.Jwt.Token)
+					if err != nil || userId != tt.userId || tokenType != secure.RefreshTokenType {
 						t.Errorf("Invalid refresh token: %s", response.Response.RefreshToken.Jwt.Token)
 					}
 
-					userId, tokenType, _, err = server.validator.ValidateJWT(response.Response.AccessToken.Jwt.Token)
-					if err != nil || userId != tt.userId || tokenType != jwt.AccessTokenType {
+					userId, tokenType, _, err = server.validator.Validate(response.Response.AccessToken.Jwt.Token)
+					if err != nil || userId != tt.userId || tokenType != secure.AccessTokenType {
 						t.Errorf("Invalid access token: %s", response.Response.AccessToken.Jwt.Token)
 					}
 
