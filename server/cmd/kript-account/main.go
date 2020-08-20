@@ -15,8 +15,9 @@ import (
 )
 
 var (
-	privateJwtKeyPath = flag.String("private-jwt", "", "The path to the private RSA key used to sign JWTs")
-	publicJwtKeyPath  = flag.String("public-jwt", "", "The path to the public RSA key used to verify JWTs")
+	privateJwtKeyPath  = flag.String("private-jwt", "", "The path to the private RSA key used to sign JWTs")
+	publicJwtKeyPath   = flag.String("public-jwt", "", "The path to the public RSA key used to verify JWTs")
+	sendgridApiKeyPath = flag.String("sendgrid-api-key", "", "The path to the API key for SendGrid")
 )
 
 var log grpclog.LoggerV2
@@ -55,8 +56,14 @@ func main() {
 		log.Fatalln("Failed to read jwt public key:", err)
 		return
 	}
+	sendGridApiKeyData, err := ioutil.ReadFile(*sendgridApiKeyPath)
+	if err != nil {
+		log.Fatalln("Failed to read SendGrid api key:", err)
+		return
+	}
+	sendgridApiKey := string(sendGridApiKeyData)
 
-	accountServer, err := account.Server(&log, privateKey, publicKey)
+	accountServer, err := account.Server(&log, privateKey, publicKey, sendgridApiKey)
 	if err != nil {
 		log.Fatalln("Failed to create data database client:", err)
 		return

@@ -112,6 +112,13 @@ github.com/jstemmer/go-junit-report/formatter
 github.com/jstemmer/go-junit-report/parser
 # github.com/kr/pretty v0.2.0
 ## explicit
+# github.com/sendgrid/rest v2.6.1+incompatible
+## explicit
+github.com/sendgrid/rest
+# github.com/sendgrid/sendgrid-go v3.6.2+incompatible
+## explicit
+github.com/sendgrid/sendgrid-go
+github.com/sendgrid/sendgrid-go/helpers/mail
 # go.opencensus.io v0.22.3
 go.opencensus.io
 go.opencensus.io/internal
