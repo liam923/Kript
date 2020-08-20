@@ -107,3 +107,32 @@ func (mr *MockdatabaseMockRecorder) createUser(ctx, user interface{}) *gomock.Ca
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createUser", reflect.TypeOf((*Mockdatabase)(nil).createUser), ctx, user)
 }
+
+// addVerificationTokenCode mocks base method
+func (m *Mockdatabase) addVerificationTokenCode(ctx context.Context, userId, tokenId, code string, confirmDestination *twoFactorOption) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "addVerificationTokenCode", ctx, userId, tokenId, code, confirmDestination)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// addVerificationTokenCode indicates an expected call of addVerificationTokenCode
+func (mr *MockdatabaseMockRecorder) addVerificationTokenCode(ctx, userId, tokenId, code, confirmDestination interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "addVerificationTokenCode", reflect.TypeOf((*Mockdatabase)(nil).addVerificationTokenCode), ctx, userId, tokenId, code, confirmDestination)
+}
+
+// verifyVerificationTokenCode mocks base method
+func (m *Mockdatabase) verifyVerificationTokenCode(ctx context.Context, userId, tokenId, code string) (*twoFactorOption, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "verifyVerificationTokenCode", ctx, userId, tokenId, code)
+	ret0, _ := ret[0].(*twoFactorOption)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// verifyVerificationTokenCode indicates an expected call of verifyVerificationTokenCode
+func (mr *MockdatabaseMockRecorder) verifyVerificationTokenCode(ctx, userId, tokenId, code interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "verifyVerificationTokenCode", reflect.TypeOf((*Mockdatabase)(nil).verifyVerificationTokenCode), ctx, userId, tokenId, code)
+}

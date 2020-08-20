@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	firestoreTag     = "firestore"
-	firestoreTimeout = time.Minute
+	firestoreTag                   = "firestore"
+	firestoreTimeout               = time.Minute
+	verificationCodesSubcollection = "verificationCodes"
 )
 
 type password struct {
@@ -71,6 +72,12 @@ func (u user) toApiUser(id string, includePrivate bool) *api.User {
 	}
 }
 
+type verificationCode struct {
+	Code                  string          `firestore:"Code,omitempty"`
+	HasConfirmDestination bool            `firestore:"hasDestination,omitempty"`
+	ConfirmDestination    twoFactorOption `firestore:"destination,omitempty"`
+}
+
 //go:generate mockgen -source firebase.go -destination mocks_test.go -package account
 
 // database is a mockable interface for interacting with Firestore or any other database
@@ -80,6 +87,8 @@ type database interface {
 	isUsernameAvailable(ctx context.Context, username string) (bool, error)
 	updateUser(ctx context.Context, userId string, user *user) error
 	createUser(ctx context.Context, user *user) (userId string, err error)
+	addVerificationTokenCode(ctx context.Context, userId string, tokenId string, code string, confirmDestination *twoFactorOption) error
+	verifyVerificationTokenCode(ctx context.Context, userId string, tokenId string, code string) (confirmDestination *twoFactorOption, err error)
 }
 
 // A database implementation for Firestore.
@@ -160,6 +169,53 @@ func (s *fs) createUser(ctx context.Context, user *user) (userId string, err err
 	}
 
 	return docRef.ID, nil
+}
+
+func (s *fs) addVerificationTokenCode(ctx context.Context, userId string, tokenId string, code string, confirmDestination *twoFactorOption) error {
+	ctx, _ = context.WithTimeout(ctx, firestoreTimeout)
+
+	codeStruct := verificationCode{
+		Code:                  code,
+		HasConfirmDestination: false,
+	}
+	if confirmDestination != nil {
+		codeStruct.ConfirmDestination = *confirmDestination
+		codeStruct.HasConfirmDestination = true
+	}
+
+	data, err := encode.ToMap(codeStruct, firestoreTag)
+	if err != nil {
+		return richError(err)
+	}
+
+	_, err = s.db.Doc(userId).Collection(verificationCodesSubcollection).Doc(tokenId).Create(ctx, data)
+	if err != nil {
+		return richError(err)
+	}
+
+	return nil
+}
+
+func (s *fs) verifyVerificationTokenCode(ctx context.Context, userId string, tokenId string, code string) (confirmDestination *twoFactorOption, err error) {
+	ctx, _ = context.WithTimeout(ctx, firestoreTimeout)
+
+	doc, err := s.db.Doc(userId).Collection(verificationCodesSubcollection).Doc(tokenId).Get(ctx)
+	verificationCode := &verificationCode{}
+	if err == nil {
+		err = richError(doc.DataTo(verificationCode))
+		if verificationCode.Code != code {
+			err = status.Error(codes.Unauthenticated, "invalid verification Code")
+		} else if verificationCode.HasConfirmDestination {
+			confirmDestination = &verificationCode.ConfirmDestination
+		}
+	} else {
+		err = richError(err)
+	}
+
+	if err != nil {
+		confirmDestination = nil
+	}
+	return
 }
 
 func richError(err error) error {

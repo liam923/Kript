@@ -859,7 +859,7 @@ struct Kript_Api_AddTwoFactorResponse {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// The token used to identify the user through the verification process.
+  /// The token used to identify the verification code flow.
   var verificationToken: Kript_Api_VerificationToken {
     get {return _verificationToken ?? Kript_Api_VerificationToken()}
     set {_verificationToken = newValue}
@@ -881,9 +881,9 @@ struct Kript_Api_VerifyTwoFactorRequest {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// The token used to identify the user through the verification process.
-  var verificationToken: Kript_Api_AccessToken {
-    get {return _verificationToken ?? Kript_Api_AccessToken()}
+  /// The token used to identify the verification code flow.
+  var verificationToken: Kript_Api_VerificationToken {
+    get {return _verificationToken ?? Kript_Api_VerificationToken()}
     set {_verificationToken = newValue}
   }
   /// Returns true if `verificationToken` has been explicitly set.
@@ -898,7 +898,7 @@ struct Kript_Api_VerifyTwoFactorRequest {
 
   init() {}
 
-  fileprivate var _verificationToken: Kript_Api_AccessToken? = nil
+  fileprivate var _verificationToken: Kript_Api_VerificationToken? = nil
 }
 
 struct Kript_Api_VerifyTwoFactorResponse {

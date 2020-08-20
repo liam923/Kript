@@ -322,13 +322,13 @@ message AddTwoFactorRequest {
 }
 
 message AddTwoFactorResponse {
-  // The token used to identify the user through the verification process.
+  // The token used to identify the verification code flow.
   VerificationToken verification_token = 1;
 }
 
 message VerifyTwoFactorRequest {
-  // The token used to identify the user through the verification process.
-  AccessToken verification_token = 1;
+  // The token used to identify the verification code flow.
+  VerificationToken verification_token = 1;
   // The two-factor authentication code received on the specified destination.
   string code = 2;
 }
