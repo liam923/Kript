@@ -5,6 +5,7 @@ import (
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"math/rand"
+	"time"
 )
 
 // An interface for types that send verification codes to a destination.
@@ -35,6 +36,7 @@ type emailSender struct {
 }
 
 func EmailSender(apiKey string) CodeSender {
+	rand.Seed(time.Now().UTC().UnixNano())
 	return &emailSender{
 		client: sendgrid.NewSendClient(apiKey),
 		codeGenerator: codeGenerator{

@@ -633,7 +633,7 @@
       "properties": {
         "verification_token": {
           "$ref": "#/definitions/apiVerificationToken",
-          "description": "The token used to identify the user through the verification process."
+          "description": "The token used to identify the verification code flow."
         }
       }
     },
@@ -1222,8 +1222,8 @@
       "type": "object",
       "properties": {
         "verification_token": {
-          "$ref": "#/definitions/apiAccessToken",
-          "description": "The token used to identify the user through the verification process."
+          "$ref": "#/definitions/apiVerificationToken",
+          "description": "The token used to identify the verification code flow."
         },
         "code": {
           "type": "string",

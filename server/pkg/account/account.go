@@ -3,6 +3,8 @@ package account
 import (
 	"bytes"
 	"context"
+	"github.com/google/uuid"
+	"github.com/liam923/Kript/server/internal/secure"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
@@ -115,9 +117,82 @@ func (s *server) CreateAccount(ctx context.Context, request *api.CreateAccountRe
 }
 
 func (s *server) AddTwoFactor(ctx context.Context, request *api.AddTwoFactorRequest) (*api.AddTwoFactorResponse, error) {
-	panic("implement me")
+	if request == nil || request.TwoFactor == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+
+	userId, err := s.loginUserWithAccessToken(*request.AccessToken)
+	if err != nil {
+		return nil, err
+	}
+
+	var code string
+	switch request.TwoFactor.Type {
+	case api.TwoFactorType_EMAIL:
+		code, err = s.emailVerificationCodeSender.SendCode(request.TwoFactor.Destination)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	default:
+		return nil, status.Error(codes.Unimplemented, "the given two factor type is not yet supported")
+	}
+
+	token, tokenId, err := s.grantVerificationToken(ctx, userId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	err = s.database.addVerificationTokenCode(ctx, userId, tokenId, code, &twoFactorOption{
+		Type:        request.TwoFactor.Type,
+		Destination: request.TwoFactor.Destination,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.AddTwoFactorResponse{
+		VerificationToken: &api.VerificationToken{
+			Jwt: &api.JWT{Token: token},
+		},
+	}, nil
 }
 
 func (s *server) VerifyTwoFactor(ctx context.Context, request *api.VerifyTwoFactorRequest) (*api.VerifyTwoFactorResponse, error) {
-	panic("implement me")
+	if request == nil || request.VerificationToken == nil || request.VerificationToken.Jwt == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+
+	userId, tokenType, tokenId, err := s.validator.Validate(request.VerificationToken.Jwt.Token)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "invalid access token")
+	}
+	if tokenType != secure.VerificationTokenType {
+		return nil, status.Errorf(codes.Unauthenticated, "incorrect token type: %s", tokenType)
+	}
+
+	option, err := s.database.verifyVerificationTokenCode(ctx, userId, tokenId, request.Code)
+	if err != nil {
+		return nil, err
+	}
+	if option == nil {
+		return nil, status.Error(codes.Unauthenticated, "verification token is meant for login flow")
+	}
+
+	user, err := s.database.fetchUserById(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	user.TwoFactor[uuid.New().String()] = *option
+	err = s.database.updateUser(ctx, userId, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.VerifyTwoFactorResponse{
+		TwoFactor: &api.TwoFactor{
+			Type:        option.Type,
+			Destination: option.Destination,
+		},
+	}, nil
 }
