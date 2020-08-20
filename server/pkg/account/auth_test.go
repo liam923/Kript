@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/golang/mock/gomock"
-	"github.com/liam923/Kript/server/internal/generate"
-	"github.com/liam923/Kript/server/internal/jwt"
+	"github.com/liam923/Kript/server/internal/secure"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/grpclog"
@@ -17,19 +16,19 @@ type dummyWriter struct{}
 func (w *dummyWriter) Write([]byte) (n int, err error) { return }
 
 // Create a server that writes to a dummy log.
-func createServer(t *testing.T, db database) Server {
+func createServer(t *testing.T, db database) server {
 	issuerId := "kript.api"
-	keyPair := generate.Keys(4096)
+	keyPair := secure.GenerateKeys(4096)
 	logger := grpclog.NewLoggerV2(&dummyWriter{}, &dummyWriter{}, &dummyWriter{})
-	signer, err := jwt.NewSigner(keyPair.Private, issuerId)
+	signer, err := secure.NewJwtSigner(keyPair.Private, issuerId)
 	if err != nil {
 		t.Errorf("Failed to initialize signer")
 	}
-	validator, err := jwt.NewValidator(keyPair.Public, issuerId)
+	validator, err := secure.NewJwtValidator(keyPair.Public, issuerId)
 	if err != nil {
 		t.Errorf("Failed to initialize validator")
 	}
-	return Server{
+	return server{
 		database:              db,
 		Logger:                &logger,
 		signer:                signer,
@@ -256,12 +255,12 @@ func TestLoginUser(t *testing.T) {
 				if tt.twoFactorOptions == nil {
 					switch x := response.ResponseType.(type) {
 					case *api.LoginUserResponse_Response:
-						userId, tokenType, _, err := server.validator.ValidateJWT(x.Response.AccessToken.Jwt.Token)
-						if err != nil || userId != tt.userId || tokenType != jwt.AccessTokenType {
+						userId, tokenType, _, err := server.validator.Validate(x.Response.AccessToken.Jwt.Token)
+						if err != nil || userId != tt.userId || tokenType != secure.AccessTokenType {
 							t.Errorf("Invalid access token: %s", x.Response.AccessToken.Jwt.Token)
 						}
-						userId, tokenType, _, err = server.validator.ValidateJWT(x.Response.RefreshToken.Jwt.Token)
-						if err != nil || userId != tt.userId || tokenType != jwt.RefreshTokenType {
+						userId, tokenType, _, err = server.validator.Validate(x.Response.RefreshToken.Jwt.Token)
+						if err != nil || userId != tt.userId || tokenType != secure.RefreshTokenType {
 							t.Errorf("Invalid refresh token: %s", x.Response.AccessToken.Jwt.Token)
 						}
 					default:
@@ -270,8 +269,8 @@ func TestLoginUser(t *testing.T) {
 				} else {
 					switch x := response.ResponseType.(type) {
 					case *api.LoginUserResponse_TwoFactor:
-						userId, tokenType, _, err := server.validator.ValidateJWT(x.TwoFactor.VerificationToken.Jwt.Token)
-						if err != nil || userId != tt.userId || tokenType != jwt.VerificationTokenType {
+						userId, tokenType, _, err := server.validator.Validate(x.TwoFactor.VerificationToken.Jwt.Token)
+						if err != nil || userId != tt.userId || tokenType != secure.VerificationTokenType {
 							t.Errorf("Invalid access token: %s", x.TwoFactor.VerificationToken.Jwt.Token)
 						}
 
@@ -324,7 +323,7 @@ func TestRefreshAuth(t *testing.T) {
 	server := createServer(t, db)
 
 	userId := "user12345"
-	validToken, invalidTokens := generate.JWT(server.signer, userId, jwt.RefreshTokenType)
+	validToken, invalidTokens := secure.GenerateJwt(server.signer, userId, secure.RefreshTokenType)
 
 	t.Run("validPassword token", func(t *testing.T) {
 		response, err := server.RefreshAuth(context.Background(), &api.RefreshAuthRequest{
@@ -333,11 +332,11 @@ func TestRefreshAuth(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error on validPassword token: %v", err)
 		}
-		actualUserId, tokenType, _, err := server.validator.ValidateJWT(response.AccessToken.Jwt.Token)
+		actualUserId, tokenType, _, err := server.validator.Validate(response.AccessToken.Jwt.Token)
 		if err != nil {
 			t.Errorf("unexpected error validating validPassword token: %v", err)
 		}
-		if actualUserId != userId || tokenType != jwt.AccessTokenType {
+		if actualUserId != userId || tokenType != secure.AccessTokenType {
 			t.Errorf("got incorrect access token: %v", response.AccessToken.Jwt.Token)
 		}
 	})

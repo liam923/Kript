@@ -1,4 +1,4 @@
-package generate
+package secure
 
 import (
 	"crypto/rand"
@@ -6,14 +6,20 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"io/ioutil"
 )
+
+func ReadRSAKeyFile(path string) (key []byte, err error) {
+	key, err = ioutil.ReadFile(path)
+	return
+}
 
 type Pair struct {
 	Public  []byte
 	Private []byte
 }
 
-func Keys(bitSize int) Pair {
+func GenerateKeys(bitSize int) Pair {
 	privateKey, err := rsa.GenerateKey(rand.Reader, bitSize)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to generate test keys for bit size %d", bitSize))

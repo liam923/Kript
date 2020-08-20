@@ -2,7 +2,7 @@ package account
 
 import (
 	"context"
-	"github.com/liam923/Kript/server/internal/jwt"
+	"github.com/liam923/Kript/server/internal/secure"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
 	"golang.org/x/crypto/bcrypt"
 
@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func (s *Server) LoginUser(ctx context.Context, request *api.LoginUserRequest) (*api.LoginUserResponse, error) {
+func (s *server) LoginUser(ctx context.Context, request *api.LoginUserRequest) (*api.LoginUserResponse, error) {
 	if request == nil {
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
@@ -76,28 +76,28 @@ func (s *Server) LoginUser(ctx context.Context, request *api.LoginUserRequest) (
 	}
 }
 
-func (s *Server) SendVerification(context.Context, *api.SendVerificationRequest) (*api.SendVerificationResponse, error) {
+func (s *server) SendVerification(context.Context, *api.SendVerificationRequest) (*api.SendVerificationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "two factor auth is unimplemented")
 }
 
-func (s *Server) VerifyUser(context.Context, *api.VerifyUserRequest) (*api.VerifyUserResponse, error) {
+func (s *server) VerifyUser(context.Context, *api.VerifyUserRequest) (*api.VerifyUserResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "two factor auth is unimplemented")
 }
 
-func (s *Server) RefreshAuth(ctx context.Context, request *api.RefreshAuthRequest) (*api.RefreshAuthResponse, error) {
+func (s *server) RefreshAuth(ctx context.Context, request *api.RefreshAuthRequest) (*api.RefreshAuthResponse, error) {
 	if request == nil || !s.validateRefreshTokenFormat(request.RefreshToken) {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
-	userId, tokenType, _, err := s.validator.ValidateJWT(request.RefreshToken.Jwt.Token)
+	userId, tokenType, _, err := s.validator.Validate(request.RefreshToken.Jwt.Token)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "invalid access token")
 	}
-	if tokenType != jwt.RefreshTokenType {
+	if tokenType != secure.RefreshTokenType {
 		return nil, status.Errorf(codes.Unauthenticated, "incorrect token type: %s", tokenType)
 	}
 
-	accessToken, _, err := s.signer.CreateAndSignJWT(userId, time.Now().Add(s.accessTokenLife), jwt.AccessTokenType)
+	accessToken, _, err := s.signer.CreateAndSign(userId, time.Now().Add(s.accessTokenLife), secure.AccessTokenType)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -109,9 +109,9 @@ func (s *Server) RefreshAuth(ctx context.Context, request *api.RefreshAuthReques
 	}, nil
 }
 
-func (s *Server) loginUserWithAccessToken(token api.AccessToken) (userId string, err error) {
-	userId, tokenType, _, err := s.validator.ValidateJWT(token.Jwt.Token)
-	if tokenType != jwt.AccessTokenType {
+func (s *server) loginUserWithAccessToken(token api.AccessToken) (userId string, err error) {
+	userId, tokenType, _, err := s.validator.Validate(token.Jwt.Token)
+	if tokenType != secure.AccessTokenType {
 		return "", status.Errorf(codes.Unauthenticated, "incorrect token type: %s", tokenType)
 	}
 	if err != nil {
@@ -120,13 +120,13 @@ func (s *Server) loginUserWithAccessToken(token api.AccessToken) (userId string,
 	return userId, nil
 }
 
-func (s *Server) grantLogin(ctx context.Context, userId string, user *api.User) (message *api.SuccessfulLoginMessage, err error) {
+func (s *server) grantLogin(ctx context.Context, userId string, user *api.User) (message *api.SuccessfulLoginMessage, err error) {
 	// TODO: refresh tokens should be revocable
-	refreshToken, _, err := s.signer.CreateAndSignJWT(userId, time.Now().Add(s.refreshTokenLife), jwt.RefreshTokenType)
+	refreshToken, _, err := s.signer.CreateAndSign(userId, time.Now().Add(s.refreshTokenLife), secure.RefreshTokenType)
 	if err != nil {
 		return
 	}
-	accessToken, _, err := s.signer.CreateAndSignJWT(userId, time.Now().Add(s.accessTokenLife), jwt.AccessTokenType)
+	accessToken, _, err := s.signer.CreateAndSign(userId, time.Now().Add(s.accessTokenLife), secure.AccessTokenType)
 	if err != nil {
 		return
 	}
@@ -142,12 +142,12 @@ func (s *Server) grantLogin(ctx context.Context, userId string, user *api.User) 
 	}, nil
 }
 
-func (s *Server) grantAccessToken(ctx context.Context, userId string) (token string, err error) {
-	token, _, err = s.signer.CreateAndSignJWT(userId, time.Now().Add(s.accessTokenLife), jwt.AccessTokenType)
+func (s *server) grantAccessToken(ctx context.Context, userId string) (token string, err error) {
+	token, _, err = s.signer.CreateAndSign(userId, time.Now().Add(s.accessTokenLife), secure.AccessTokenType)
 	return
 }
 
-func (s *Server) grantVerificationToken(ctx context.Context, userId string) (token string, err error) {
-	token, _, err = s.signer.CreateAndSignJWT(userId, time.Now().Add(s.verificationTokenLife), jwt.VerificationTokenType)
+func (s *server) grantVerificationToken(ctx context.Context, userId string) (token string, err error) {
+	token, _, err = s.signer.CreateAndSign(userId, time.Now().Add(s.verificationTokenLife), secure.VerificationTokenType)
 	return
 }

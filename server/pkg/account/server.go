@@ -3,26 +3,26 @@ package account
 import (
 	"cloud.google.com/go/firestore"
 	"context"
-	"github.com/liam923/Kript/server/internal/jwt"
+	"github.com/liam923/Kript/server/internal/secure"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/grpc/grpclog"
 	"time"
 )
 
 // An implementation of AccountService.
-type Server struct {
+type server struct {
 	database              database
 	Logger                *grpclog.LoggerV2
-	signer                *jwt.Signer
-	validator             *jwt.Validator
+	signer                secure.JwtSigner
+	validator             secure.JwtValidator
 	refreshTokenLife      time.Duration
 	accessTokenLife       time.Duration
 	verificationTokenLife time.Duration
 }
 
-// Create a new Server. projectId is the id of the project that the Firestore database is housed in, and generate
+// Create a new server. projectId is the id of the project that the Firestore database is housed in, and generate
 // is used to sign tokens.
-func NewServer(logger *grpclog.LoggerV2, privateKey []byte, publicKey []byte) (*Server, error) {
+func Server(logger *grpclog.LoggerV2, privateKey []byte, publicKey []byte) (*server, error) {
 	googleCreds, err := google.FindDefaultCredentials(context.Background())
 	if err != nil {
 		return nil, err
@@ -31,21 +31,21 @@ func NewServer(logger *grpclog.LoggerV2, privateKey []byte, publicKey []byte) (*
 	if err != nil {
 		return nil, err
 	}
-	signer, err := jwt.NewSigner(privateKey, jwt.IssuerId)
+	signer, err := secure.NewJwtSigner(privateKey, secure.IssuerId)
 	if err != nil {
 		return nil, err
 	}
-	validator, err := jwt.NewValidator(publicKey, jwt.IssuerId)
+	validator, err := secure.NewJwtValidator(publicKey, secure.IssuerId)
 	if err != nil {
 		return nil, err
 	}
-	return &Server{
+	return &server{
 		database:              &fs{client.Collection("account")},
 		Logger:                logger,
 		signer:                signer,
 		validator:             validator,
-		refreshTokenLife:      jwt.RefreshTokenLife,
-		accessTokenLife:       jwt.AccessTokenLife,
-		verificationTokenLife: jwt.VerificationTokenLife,
+		refreshTokenLife:      secure.RefreshTokenLife,
+		accessTokenLife:       secure.AccessTokenLife,
+		verificationTokenLife: secure.VerificationTokenLife,
 	}, nil
 }

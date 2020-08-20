@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) GetUser(ctx context.Context, request *api.GetUserRequest) (response *api.GetUserResponse, err error) {
+func (s *server) GetUser(ctx context.Context, request *api.GetUserRequest) (response *api.GetUserResponse, err error) {
 	if request == nil || (request.AccessToken != nil && !s.validateAccessTokenFormat(request.AccessToken)) {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
