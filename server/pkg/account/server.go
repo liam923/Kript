@@ -11,18 +11,19 @@ import (
 
 // An implementation of AccountService.
 type server struct {
-	database              database
-	Logger                *grpclog.LoggerV2
-	signer                secure.JwtSigner
-	validator             secure.JwtValidator
-	refreshTokenLife      time.Duration
-	accessTokenLife       time.Duration
-	verificationTokenLife time.Duration
+	database                    database
+	Logger                      *grpclog.LoggerV2
+	signer                      secure.JwtSigner
+	validator                   secure.JwtValidator
+	refreshTokenLife            time.Duration
+	accessTokenLife             time.Duration
+	verificationTokenLife       time.Duration
+	emailVerificationCodeSender secure.CodeSender
 }
 
 // Create a new server. projectId is the id of the project that the Firestore database is housed in, and generate
 // is used to sign tokens.
-func Server(logger *grpclog.LoggerV2, privateKey []byte, publicKey []byte) (*server, error) {
+func Server(logger *grpclog.LoggerV2, privateKey []byte, publicKey []byte, sendgridApiKey string) (*server, error) {
 	googleCreds, err := google.FindDefaultCredentials(context.Background())
 	if err != nil {
 		return nil, err
@@ -40,12 +41,13 @@ func Server(logger *grpclog.LoggerV2, privateKey []byte, publicKey []byte) (*ser
 		return nil, err
 	}
 	return &server{
-		database:              &fs{client.Collection("account")},
-		Logger:                logger,
-		signer:                signer,
-		validator:             validator,
-		refreshTokenLife:      secure.RefreshTokenLife,
-		accessTokenLife:       secure.AccessTokenLife,
-		verificationTokenLife: secure.VerificationTokenLife,
+		database:                    &fs{client.Collection("account")},
+		Logger:                      logger,
+		signer:                      signer,
+		validator:                   validator,
+		refreshTokenLife:            secure.RefreshTokenLife,
+		accessTokenLife:             secure.AccessTokenLife,
+		verificationTokenLife:       secure.VerificationTokenLife,
+		emailVerificationCodeSender: secure.EmailSender(sendgridApiKey),
 	}, nil
 }
