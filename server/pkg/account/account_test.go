@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/liam923/Kript/server/internal/secure"
 	"github.com/liam923/Kript/server/pkg/proto/kript/api"
+	"golang.org/x/crypto/bcrypt"
 	"reflect"
 	"testing"
 )
@@ -54,6 +55,11 @@ func TestUpdatePassword(t *testing.T) {
 	// Initialize server
 	server := createServer(t, db)
 
+	hashedOldPassword, err := bcrypt.GenerateFromPassword([]byte("password"), 5)
+	if err != nil {
+		t.Errorf("error generating password hash: %s", err)
+	}
+
 	userId := "1234567890"
 	validToken, invalidTokens := secure.GenerateJwt(server.signer, userId, secure.AccessTokenType)
 	tests := []struct {
@@ -74,7 +80,7 @@ func TestUpdatePassword(t *testing.T) {
 			testName: "valid password update 1",
 			request: &api.UpdatePasswordRequest{
 				AccessToken:                   &api.AccessToken{Jwt: &api.JWT{Token: validToken}},
-				OldPassword:                   &api.HString{Data: []byte("spaghetti")},
+				OldPassword:                   &api.HString{Data: []byte("password")},
 				NewPassword:                   &api.HString{Data: []byte("pasta")},
 				NewSalt:                       []byte("pepper"),
 				NewPasswordHashAlgorithm:      0,
@@ -87,7 +93,7 @@ func TestUpdatePassword(t *testing.T) {
 			user: user{
 				Username: "liam923",
 				Password: password{
-					Hash:          []byte("spaghetti"),
+					Hash:          hashedOldPassword,
 					Salt:          []byte("salt"),
 					HashAlgorithm: 0,
 				},
@@ -110,7 +116,7 @@ func TestUpdatePassword(t *testing.T) {
 			testName: "valid password update 2",
 			request: &api.UpdatePasswordRequest{
 				AccessToken:                   &api.AccessToken{Jwt: &api.JWT{Token: validToken}},
-				OldPassword:                   &api.HString{Data: []byte("spaghetti")},
+				OldPassword:                   &api.HString{Data: []byte("password")},
 				NewPassword:                   &api.HString{Data: []byte("pasta")},
 				NewSalt:                       []byte("pepper"),
 				NewPasswordHashAlgorithm:      0,
@@ -123,7 +129,7 @@ func TestUpdatePassword(t *testing.T) {
 			user: user{
 				Username: "liam923",
 				Password: password{
-					Hash:          []byte("spaghetti"),
+					Hash:          hashedOldPassword,
 					Salt:          []byte("salt"),
 					HashAlgorithm: 0,
 				},
@@ -152,7 +158,7 @@ func TestUpdatePassword(t *testing.T) {
 			testName: "wrong old password",
 			request: &api.UpdatePasswordRequest{
 				AccessToken:                   &api.AccessToken{Jwt: &api.JWT{Token: validToken}},
-				OldPassword:                   &api.HString{Data: []byte("rigatoni")},
+				OldPassword:                   &api.HString{Data: []byte("pass")},
 				NewPassword:                   &api.HString{Data: []byte("pasta")},
 				NewSalt:                       []byte("pepper"),
 				NewPasswordHashAlgorithm:      0,
@@ -165,7 +171,7 @@ func TestUpdatePassword(t *testing.T) {
 			user: user{
 				Username: "liam923",
 				Password: password{
-					Hash:          []byte("spaghetti"),
+					Hash:          hashedOldPassword,
 					Salt:          []byte("salt"),
 					HashAlgorithm: 0,
 				},
@@ -219,21 +225,16 @@ func TestUpdatePassword(t *testing.T) {
 					fetchUserById(context.Background(), tt.userId).
 					Return(&tt.user, nil)
 				if tt.validPassword {
+					expectedUser := tt.user
+					expectedUser.Password.Salt = tt.request.NewSalt
+					expectedUser.Password.HashAlgorithm = tt.request.NewPasswordHashAlgorithm
+					expectedUser.Keys.PrivateKey = tt.request.PrivateKey.Data
+					expectedUser.Keys.PrivateKeyIv = tt.request.PrivateKeyIv
+					expectedUser.Keys.PrivateKeyKeySalt = tt.request.PrivateKeyKeySalt
+					expectedUser.Keys.PrivateKeyKeyHashAlgorithm = tt.request.PrivateKeyKeyHashAlgorithm
+					expectedUser.Keys.PrivateKeyEncryptionAlgorithm = tt.request.PrivateKeyEncryptionAlgorithm
 					db.EXPECT().
-						updateUser(context.Background(), tt.userId, &userMatcher{user: &user{
-							Password: password{
-								Hash:          tt.request.NewPassword.Data,
-								Salt:          tt.request.NewSalt,
-								HashAlgorithm: tt.request.NewPasswordHashAlgorithm,
-							},
-							Keys: keys{
-								PrivateKey:                    tt.request.PrivateKey.Data,
-								PrivateKeyIv:                  tt.request.PrivateKeyIv,
-								PrivateKeyKeySalt:             tt.request.PrivateKeyKeySalt,
-								PrivateKeyKeyHashAlgorithm:    tt.request.PrivateKeyKeyHashAlgorithm,
-								PrivateKeyEncryptionAlgorithm: tt.request.PrivateKeyEncryptionAlgorithm,
-							},
-						}}).
+						updateUser(context.Background(), tt.userId, &userMatcher{user: &expectedUser}).
 						Return(nil)
 				}
 			}
@@ -251,7 +252,6 @@ func TestUpdatePassword(t *testing.T) {
 				expectedUser := user{
 					Username: tt.user.Username,
 					Password: password{
-						Hash:          tt.request.NewPassword.Data,
 						Salt:          tt.request.NewSalt,
 						HashAlgorithm: tt.request.NewPasswordHashAlgorithm,
 					},
