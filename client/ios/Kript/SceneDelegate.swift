@@ -27,8 +27,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             .secure(group: group)
             .connect(host: "grpc.kript.us", port: 443)
         
-        let accountClient = Kript_Api_AccountServiceClient(channel: channel, defaultCallOptions: CallOptions(timeLimit: TimeLimit.timeout(.minutes(1))))
-        let dataClient = Kript_Api_DataServiceClient(channel: channel, defaultCallOptions: CallOptions(timeLimit: TimeLimit.timeout(.minutes(1))))
+        let accountClient = Kript_Api_AccountServiceClient(channel: channel, defaultCallOptions: CallOptions(timeLimit: TimeLimit.timeout(.seconds(10))))
+        let dataClient = Kript_Api_DataServiceClient(channel: channel, defaultCallOptions: CallOptions(timeLimit: TimeLimit.timeout(.seconds(10))))
         
         let manager = Manager(keychain: KeychainSwift(), accountClient: accountClient, dataClient: dataClient)
         let contentView = ContentView(manager: manager, user: manager.loadUser())

@@ -23,6 +23,6 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(manager: MockManager(), user: User(id: "", refreshToken: Kript_Api_RefreshToken(), accessToken: nil, publicKey: Data(), privateKey: Data(), dataEncryptionAlgorithm: .unknownAEncryptionAlgorithm))
+        ContentView(manager: MockManager(), user: User(id: "", refreshToken: Kript_Api_RefreshToken(), accessToken: nil, publicKey: Data(), privateKey: Data(), userObject: Kript_Api_User()))
     }
 }

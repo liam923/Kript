@@ -86,11 +86,8 @@ struct DatumListView: View {
             }
             .navigationBarTitle("Your Data")
             .navigationBarItems(
-                leading: Button(action: {
-                    self.manager.logoutUser()
-                    self.user = nil
-                }, label: {
-                    Text("Logout")
+                leading: NavigationLink(destination: SettingsView(manager: manager, user: self.$user), label: {
+                    Text("Settings")
                 }), trailing: Button(action: {
                     self.creating = true
                 }, label: {

@@ -50,6 +50,11 @@
 		98E9996F24D4E9BF0068EB1A /* AEncrypter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98E9996E24D4E9BF0068EB1A /* AEncrypter.swift */; };
 		98E9997124D4EA090068EB1A /* RsaEncrypter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98E9997024D4EA090068EB1A /* RsaEncrypter.swift */; };
 		98E9997324D4ED250068EB1A /* AEncrypterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98E9997224D4ED250068EB1A /* AEncrypterTests.swift */; };
+		98ECC5FF24EF53EE0064D9B1 /* VerificationCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98ECC5FE24EF53EE0064D9B1 /* VerificationCodeView.swift */; };
+		98ECC60324EF66E20064D9B1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98ECC60224EF66E20064D9B1 /* SettingsView.swift */; };
+		98ECC60524EF67CC0064D9B1 /* AddTwoFactorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98ECC60424EF67CC0064D9B1 /* AddTwoFactorView.swift */; };
+		98ECC60924F02C120064D9B1 /* ErrorMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98ECC60824F02C120064D9B1 /* ErrorMessage.swift */; };
+		98ECC60B24F031C40064D9B1 /* ChangePasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98ECC60A24F031C40064D9B1 /* ChangePasswordView.swift */; };
 		C3A0C7A3D0CE568C697F3FF6 /* Pods_Kript.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E23B0822355171AA1285A10 /* Pods_Kript.framework */; };
 /* End PBXBuildFile section */
 
@@ -108,6 +113,11 @@
 		98E9996E24D4E9BF0068EB1A /* AEncrypter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AEncrypter.swift; sourceTree = "<group>"; };
 		98E9997024D4EA090068EB1A /* RsaEncrypter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RsaEncrypter.swift; sourceTree = "<group>"; };
 		98E9997224D4ED250068EB1A /* AEncrypterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AEncrypterTests.swift; sourceTree = "<group>"; };
+		98ECC5FE24EF53EE0064D9B1 /* VerificationCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerificationCodeView.swift; sourceTree = "<group>"; };
+		98ECC60224EF66E20064D9B1 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		98ECC60424EF67CC0064D9B1 /* AddTwoFactorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTwoFactorView.swift; sourceTree = "<group>"; };
+		98ECC60824F02C120064D9B1 /* ErrorMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessage.swift; sourceTree = "<group>"; };
+		98ECC60A24F031C40064D9B1 /* ChangePasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordView.swift; sourceTree = "<group>"; };
 		AFFDB143406CBFA9F81CA6BA /* Pods_KriptTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KriptTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CCF9B7CC168630843D78682E /* Pods-Kript.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Kript.release.xcconfig"; path = "Target Support Files/Pods-Kript/Pods-Kript.release.xcconfig"; sourceTree = "<group>"; };
 		E3EB8D47D7824F754862A043 /* Pods-KriptTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KriptTests.release.xcconfig"; path = "Target Support Files/Pods-KriptTests/Pods-KriptTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -299,11 +309,16 @@
 			children = (
 				9880BC4224E70F56008D7F0C /* WelcomeView.swift */,
 				9880BC4424E70F62008D7F0C /* LoginView.swift */,
+				98ECC5FE24EF53EE0064D9B1 /* VerificationCodeView.swift */,
 				9880BC4624E70F6B008D7F0C /* CreateAccountView.swift */,
 				98B8530824D629720074B34F /* DatumListView.swift */,
 				98B8530A24D629830074B34F /* DatumView.swift */,
 				980301B824E48869000A9BDB /* EditSecretView.swift */,
 				9880BC4A24E71404008D7F0C /* IconedView.swift */,
+				98ECC60224EF66E20064D9B1 /* SettingsView.swift */,
+				98ECC60424EF67CC0064D9B1 /* AddTwoFactorView.swift */,
+				98ECC60A24F031C40064D9B1 /* ChangePasswordView.swift */,
+				98ECC60824F02C120064D9B1 /* ErrorMessage.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -515,19 +530,24 @@
 				980301B924E48869000A9BDB /* EditSecretView.swift in Sources */,
 				98239D1E24D11AB400FB557D /* data.pb.swift in Sources */,
 				98B8530B24D629830074B34F /* DatumView.swift in Sources */,
+				98ECC60524EF67CC0064D9B1 /* AddTwoFactorView.swift in Sources */,
 				98239D2324D11AB400FB557D /* encrypt.pb.swift in Sources */,
 				98E9997124D4EA090068EB1A /* RsaEncrypter.swift in Sources */,
 				98239CD624D10CBF00FB557D /* SceneDelegate.swift in Sources */,
 				98239CDB24D10CBF00FB557D /* ContentView.swift in Sources */,
 				98239D2224D11AB400FB557D /* universal.pb.swift in Sources */,
 				985C110E24D79005002C7F51 /* CDDatum.swift in Sources */,
+				98ECC60924F02C120064D9B1 /* ErrorMessage.swift in Sources */,
 				98239D2024D11AB400FB557D /* data.grpc.swift in Sources */,
 				9835FD1624D4A691004F1A63 /* SEncrypter.swift in Sources */,
 				98B8530924D629720074B34F /* DatumListView.swift in Sources */,
+				98ECC60B24F031C40064D9B1 /* ChangePasswordView.swift in Sources */,
 				9880BC4B24E71404008D7F0C /* IconedView.swift in Sources */,
+				98ECC5FF24EF53EE0064D9B1 /* VerificationCodeView.swift in Sources */,
 				98239CD924D10CBF00FB557D /* Kript.xcdatamodeld in Sources */,
 				98297C7E24D38F0200F6D8E7 /* Hasher.swift in Sources */,
 				98B8530724D6222B0074B34F /* Store.swift in Sources */,
+				98ECC60324EF66E20064D9B1 /* SettingsView.swift in Sources */,
 				9880BC4524E70F62008D7F0C /* LoginView.swift in Sources */,
 				98E9996F24D4E9BF0068EB1A /* AEncrypter.swift in Sources */,
 				984402C124D75CB700C5ABEA /* Manager.swift in Sources */,
