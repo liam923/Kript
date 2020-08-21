@@ -60,6 +60,35 @@ steps:
     dir: 'server'
     waitFor: ['sandbox', 'secrets']
 
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'server.push.gateway'
+    args: ['push', 'gcr.io/${PROJECT_ID}/kript-gateway:${SHORT_SHA}']
+    dir: 'server'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'server.push.grpc'
+    args: ['push', 'gcr.io/${PROJECT_ID}/kript-grpc:${SHORT_SHA}']
+    dir: 'server'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'server.push.account'
+    args: ['push', 'gcr.io/${PROJECT_ID}/kript-account:${SHORT_SHA}']
+    dir: 'server'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'server.push.data'
+    args: ['push', 'gcr.io/${PROJECT_ID}/kript-data:${SHORT_SHA}']
+    dir: 'server'
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'server.deploy'
+    entrypoint: 'bash'
+    args: ['server/scripts/deploy']
+    env:
+    - 'BRANCH=$BRANCH_NAME'
+    - 'PROJECT_ID=$PROJECT_ID'
+    - 'SHORT_SHA=$SHORT_SHA'
+
 images:
   - 'gcr.io/${PROJECT_ID}/kript-gateway:${SHORT_SHA}'
   - 'gcr.io/${PROJECT_ID}/kript-grpc:${SHORT_SHA}'
