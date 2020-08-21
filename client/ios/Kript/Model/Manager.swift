@@ -20,7 +20,7 @@ class Manager {
     private static let accessTokenKey = "accessToken"
     private static let publicKeyKey = "publicKey"
     private static let privateKeyKey = "privateKey"
-    private static let dataEncryptionAlgorithmKey = "dataEncryptionAlgorithm"
+    private static let userObjectKey = "userObjectKey"
     private static let keychainAccessLevel = KeychainSwiftAccessOptions.accessibleWhenUnlockedThisDeviceOnly
     
     private static let passwordHashAlgorithm = Kript_Api_HashAlgorithm.argon2
@@ -97,12 +97,90 @@ class Manager {
         }
     }
     
-    enum CreateResponse {
+    func sendVerificationCode(token: Kript_Api_VerificationToken, optionId: String, completion: @escaping (Bool) -> ()) {
+        var request = Kript_Api_SendVerificationRequest()
+        request.verificationToken = token
+        request.twoFactorOptionID = optionId
+        let response = self.accountClient.sendVerification(request).response
+        response.whenFailure { error in
+            completion(false)
+        }
+        response.whenSuccess { response in
+            completion(response.success)
+        }
+    }
+    
+    enum VerifyUserResponse {
+        case complete(user: User)
+        case badCode
+        case otherError // connection error, etc
+    }
+    func verifyUser(token: Kript_Api_VerificationToken, code: String, password: String, completion: @escaping (VerifyUserResponse) -> ()) {
+        var request = Kript_Api_VerifyUserRequest()
+        request.verificationToken = token
+        request.code = code
+        let response = self.accountClient.verifyUser(request).response
+        response.whenFailure { error in
+            if let status = error as? GRPCStatus, status.code == .unauthenticated {
+                completion(.badCode)
+            } else {
+                completion(.otherError)
+            }
+        }
+        response.whenSuccess { response in
+            if let user = self.processLoginSuccess(response: response.response, password: password) {
+                completion(.complete(user: user))
+            } else {
+                completion(.otherError)
+            }
+        }
+    }
+    
+    func add(twoFactorOption: Kript_Api_TwoFactor, forUser user: Binding<User?>, completion: @escaping CompletionHandler<Kript_Api_VerificationToken?>) {
+        performOperation(
+            request: { accessToken in
+                var request = Kript_Api_AddTwoFactorRequest()
+                request.accessToken = accessToken
+                request.twoFactor = twoFactorOption
+                return request
+        },
+            grpcCall: self.accountClient.addTwoFactor,
+            user: user,
+            completionFailureResponse: nil,
+            completion: completion,
+            whenSuccess: { response in
+                return response.verificationToken
+        })
+    }
+    
+    enum VerifyTwoFactorOptionResponse {
+        case complete
+        case badCode
+        case otherError // connection error, etc
+    }
+    func verifyTwoFactorOption(token: Kript_Api_VerificationToken, code: String, completion: @escaping (VerifyTwoFactorOptionResponse) -> ()) {
+        var request = Kript_Api_VerifyTwoFactorRequest()
+        request.verificationToken = token
+        request.code = code
+        let response = self.accountClient.verifyTwoFactor(request).response
+        response.whenFailure { error in
+            if let status = error as? GRPCStatus, status.code == .unauthenticated {
+                completion(.badCode)
+            } else {
+                completion(.otherError)
+            }
+        }
+        response.whenSuccess { response in
+            completion(.complete)
+        }
+    }
+    
+    enum CreateAccountResponse {
         case complete(user: User)
         case usernameTaken
         case otherError // connection error, etc
     }
-    func createAccount(username: String, password: String, completion: @escaping (CreateResponse) -> ()) {
+    func createAccount(username: String, password: String, completion: @escaping (CreateAccountResponse) -> ()) {
         let passwordHashAlgorithm = Self.passwordHashAlgorithm
         let pivateKeyGenerationAlgorithm = Self.pivateKeyGenerationAlgorithm
         let dataEncryptionAlgorithm = Self.dataEncryptionAlgorithm
@@ -112,8 +190,8 @@ class Manager {
             let pivateKeyGenerator = pivateKeyGenerationAlgorithm.hasher,
             let dataEncrypter = dataEncryptionAlgorithm.encrypter,
             let privateKeyEncrypter = privateKeyEncryptionAlgorithm.encrypter else {
-            completion(.otherError)
-            return
+                completion(.otherError)
+                return
         }
         guard let (publicKey, privateKey) = dataEncrypter.generateKeyPair() else {
             completion(.otherError)
@@ -122,14 +200,14 @@ class Manager {
         
         guard let salt = passwordHasher.generateSalt(),
             let hashedPasswordData = passwordHasher.hash(password: password, salt: salt) else {
-            completion(.otherError)
-            return
+                completion(.otherError)
+                return
         }
         
         guard let privateKeyKeySalt = pivateKeyGenerator.generateSalt(),
             let privateKeyKey = pivateKeyGenerator.hash(password: password, salt: privateKeyKeySalt) else {
-            completion(.otherError)
-            return
+                completion(.otherError)
+                return
         }
         
         let privateKeyIv = privateKeyEncrypter.generateIv()
@@ -167,6 +245,68 @@ class Manager {
         }
     }
     
+    func updatePassword(oldPassword: String, newPassword: String, forUser user: Binding<User?>, completion: @escaping (Kript_Api_User?) -> ()) {
+        let newPasswordHashAlgorithm = Self.passwordHashAlgorithm
+        let pivateKeyGenerationAlgorithm = Self.pivateKeyGenerationAlgorithm
+        let privateKeyEncryptionAlgorithm = Self.privateKeyEncryptionAlgorithm
+        
+        guard let oldPasswordHasher = user.wrappedValue?.userObject.public.passwordHashAlgorithm.hasher,
+            let newPasswordHasher = newPasswordHashAlgorithm.hasher,
+            let pivateKeyGenerator = pivateKeyGenerationAlgorithm.hasher,
+            let privateKeyEncrypter = privateKeyEncryptionAlgorithm.encrypter else {
+                completion(nil)
+                return
+        }
+        
+        guard let privateKey = user.wrappedValue?.privateKey else {
+            completion(nil)
+            return
+        }
+        
+        guard let oldSalt = user.wrappedValue?.userObject.public.passwordSalt,
+            let hashedOldPasswordData = oldPasswordHasher.hash(password: oldPassword, salt: oldSalt),
+            let newSalt = newPasswordHasher.generateSalt(),
+            let hashedNewPasswordData = newPasswordHasher.hash(password: newPassword, salt: newSalt) else {
+                completion(nil)
+                return
+        }
+        
+        guard let privateKeyKeySalt = pivateKeyGenerator.generateSalt(),
+            let privateKeyKey = pivateKeyGenerator.hash(password: newPassword, salt: privateKeyKeySalt) else {
+                completion(nil)
+                return
+        }
+        
+        let privateKeyIv = privateKeyEncrypter.generateIv()
+        guard let privateKeyEncryptedData = privateKeyEncrypter.encrypt(data: privateKey, key: privateKeyKey, iv: privateKeyIv) else {
+            completion(nil)
+            return
+        }
+        
+        performOperation(
+            request: { accessToken in
+                var request = Kript_Api_UpdatePasswordRequest()
+                request.accessToken = accessToken
+                request.oldPassword.data = hashedOldPasswordData
+                request.newPassword.data = hashedNewPasswordData
+                request.newSalt = newSalt
+                request.newPasswordHashAlgorithm = newPasswordHashAlgorithm
+                request.privateKey.data = privateKeyEncryptedData
+                request.privateKeyEncryptionAlgorithm = privateKeyEncryptionAlgorithm
+                request.privateKeyIv = privateKeyIv
+                request.privateKeyKeySalt = privateKeyKeySalt
+                request.privateKeyKeyHashAlgorithm = pivateKeyGenerationAlgorithm
+                return request
+        },
+            grpcCall: self.accountClient.updatePassword,
+            user: user,
+            completionFailureResponse: nil,
+            completion: completion,
+            whenSuccess: { response in
+                return response.user
+        })
+    }
+    
     private func processLoginSuccess(response: Kript_Api_SuccessfulLoginMessage, password: String) -> User? {
         guard let privateKeyKey = response.user.private.privateKeyKeyHashAlgorithm.hasher?.hash(password: password, salt: response.user.private.privateKeyKeySalt) else { return nil }
         
@@ -178,7 +318,7 @@ class Manager {
                     accessToken: response.accessToken,
                     publicKey: response.user.public.publicKey,
                     privateKey: privateKey,
-                    dataEncryptionAlgorithm: response.user.public.dataEncryptionAlgorithm)
+                    userObject: response.user)
     }
     
     func loadUser() -> User? {
@@ -187,7 +327,7 @@ class Manager {
         }
         guard let refreshTokenData = keychain.getData(Self.refreshTokenKey),
             let refreshToken = try? Kript_Api_RefreshToken(serializedData: refreshTokenData) else {
-            return nil
+                return nil
         }
         var accessToken: Kript_Api_AccessToken?
         if let accessTokenData = keychain.getData(Self.accessTokenKey) {
@@ -200,8 +340,9 @@ class Manager {
             return nil
         }
         
-        guard let dataEncryptionAlgorithm = Kript_Api_AEncryptionAlgorithm(rawValue: Int(keychain.get(Self.dataEncryptionAlgorithmKey) ?? "not int") ?? -1) else {
-            return nil
+        guard let userData = keychain.getData(Self.userObjectKey),
+            let user = try? Kript_Api_User(serializedData: userData) else {
+                return nil
         }
         
         return User(id: id,
@@ -209,7 +350,7 @@ class Manager {
                     accessToken: accessToken,
                     publicKey: publicKey,
                     privateKey: privateKey,
-                    dataEncryptionAlgorithm: dataEncryptionAlgorithm)
+                    userObject: user)
     }
     
     func saveUserDataToKeychain(user: User) {
@@ -226,7 +367,11 @@ class Manager {
         }
         self.keychain.set(user.publicKey, forKey: Self.publicKeyKey, withAccess: Self.keychainAccessLevel)
         self.keychain.set(user.privateKey, forKey: Self.privateKeyKey, withAccess: Self.keychainAccessLevel)
-        self.keychain.set(String(user.dataEncryptionAlgorithm.rawValue), forKey: Self.dataEncryptionAlgorithmKey, withAccess: Self.keychainAccessLevel)
+        if let user = try? user.userObject.serializedData() {
+            self.keychain.set(user, forKey: Self.userObjectKey, withAccess: Self.keychainAccessLevel)
+        } else {
+            self.keychain.delete(Self.userObjectKey)
+        }
     }
     
     private func updateAccessToken(user: User?, completion: @escaping (User?, Bool) -> ()) {
@@ -271,7 +416,7 @@ class Manager {
         self.keychain.delete(Self.accessTokenKey)
         self.keychain.delete(Self.publicKeyKey)
         self.keychain.delete(Self.privateKeyKey)
-        self.keychain.delete(Self.dataEncryptionAlgorithmKey)
+        self.keychain.delete(Self.userObjectKey)
     }
     
     // MARK: Store Management
@@ -412,7 +557,8 @@ class Manager {
                             let completionResponse = whenSuccess(response)
                             completion(completionResponse)
                         }
-                        call.whenFailure { _ in
+                        call.whenFailure { r in
+                            print(r)
                             completion(completionFailureResponse)
                         }
                     } else {
@@ -479,13 +625,13 @@ class MockManager: Manager {
     
     override func login(username: String, password: String, completion: @escaping (Manager.LoginResponse) -> ()) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            completion(.complete(user: User(id: "id", refreshToken: Kript_Api_RefreshToken(), accessToken: Kript_Api_AccessToken(), publicKey: Data(), privateKey: Data(), dataEncryptionAlgorithm: .rsa)))
+            completion(.complete(user: User(id: "id", refreshToken: Kript_Api_RefreshToken(), accessToken: Kript_Api_AccessToken(), publicKey: Data(), privateKey: Data(), userObject: Kript_Api_User())))
         }
     }
     
-    override func createAccount(username: String, password: String, completion: @escaping (Manager.CreateResponse) -> ()) {
+    override func createAccount(username: String, password: String, completion: @escaping (Manager.CreateAccountResponse) -> ()) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            completion(.complete(user: User(id: "id", refreshToken: Kript_Api_RefreshToken(), accessToken: Kript_Api_AccessToken(), publicKey: Data(), privateKey: Data(), dataEncryptionAlgorithm: .rsa)))
+            completion(.complete(user: User(id: "id", refreshToken: Kript_Api_RefreshToken(), accessToken: Kript_Api_AccessToken(), publicKey: Data(), privateKey: Data(), userObject: Kript_Api_User())))
         }
     }
     
