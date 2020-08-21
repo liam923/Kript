@@ -1,7 +1,6 @@
 package account
 
 import (
-	"bytes"
 	"context"
 	"github.com/google/uuid"
 	"github.com/liam923/Kript/server/internal/secure"
@@ -28,30 +27,17 @@ func (s *server) UpdatePassword(ctx context.Context, request *api.UpdatePassword
 		return nil, err
 	}
 
-	if bytes.Compare(fetchedUser.Password.Hash, request.OldPassword.Data) != 0 {
+	if bcrypt.CompareHashAndPassword(fetchedUser.Password.Hash, request.OldPassword.Data) != nil {
 		return nil, status.Error(codes.InvalidArgument, "incorrect old password")
 	}
 
-	err = s.database.updateUser(ctx, userId, &user{
-		Password: password{
-			Hash:          request.NewPassword.Data,
-			Salt:          request.NewSalt,
-			HashAlgorithm: request.NewPasswordHashAlgorithm,
-		},
-		Keys: keys{
-			PrivateKey:                    request.PrivateKey.Data,
-			PrivateKeyIv:                  request.PrivateKeyIv,
-			PrivateKeyKeySalt:             request.PrivateKeyKeySalt,
-			PrivateKeyKeyHashAlgorithm:    request.PrivateKeyKeyHashAlgorithm,
-			PrivateKeyEncryptionAlgorithm: request.PrivateKeyEncryptionAlgorithm,
-		},
-	})
+	newHashHash, err := bcrypt.GenerateFromPassword(request.NewPassword.Data, hashStrength)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "an internal error occurred")
 	}
 
 	updatedUser := *fetchedUser
-	updatedUser.Password.Hash = request.NewPassword.Data
+	updatedUser.Password.Hash = newHashHash
 	updatedUser.Password.Salt = request.NewSalt
 	updatedUser.Password.HashAlgorithm = request.NewPasswordHashAlgorithm
 	updatedUser.Keys.PrivateKey = request.PrivateKey.Data
@@ -59,6 +45,12 @@ func (s *server) UpdatePassword(ctx context.Context, request *api.UpdatePassword
 	updatedUser.Keys.PrivateKeyKeySalt = request.PrivateKeyKeySalt
 	updatedUser.Keys.PrivateKeyKeyHashAlgorithm = request.PrivateKeyKeyHashAlgorithm
 	updatedUser.Keys.PrivateKeyEncryptionAlgorithm = request.PrivateKeyEncryptionAlgorithm
+
+	err = s.database.updateUser(ctx, userId, &updatedUser)
+	if err != nil {
+		return nil, err
+	}
+
 	apiUser := updatedUser.toApiUser(userId, true)
 	return &api.UpdatePasswordResponse{
 		User: apiUser,
