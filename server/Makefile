@@ -1,10 +1,10 @@
 setup:
-	go get \
+	go mod tidy
+	go install \
 		github.com/gogo/protobuf/protoc-gen-gogo \
 		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
 		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
 		github.com/golang/mock/mockgen
-
 	go mod vendor
 
 	mkdir -p pkg/proto
@@ -41,7 +41,6 @@ Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api:\
 rm pkg/proto/kript/api/*.pb.gw.go.bak
 
 	go generate ./...
-	go mod tidy
 
 test:
 	go test ./...
