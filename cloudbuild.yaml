@@ -8,6 +8,8 @@ steps:
       path: '/sandbox'
     args: ['bash', '-c', 'mkdir -p "/sandbox" && cp -r . "/sandbox/repo"']
 
+  # Tests
+
   - name: gcr.io/cloud-builders/gcloud
     id: 'secrets'
     entrypoint: 'bash'
@@ -59,6 +61,22 @@ steps:
     args: ['build', '-f', 'Dockerfile.data', '-t', 'gcr.io/${PROJECT_ID}/kript-data:${SHORT_SHA}', '.']
     dir: 'server'
     waitFor: ['sandbox', 'secrets']
+
+  - name: node
+    id: 'client.web.install'
+    entrypoint: npm
+    args: ['install']
+    dir: 'client/web'
+    waitFor: ['sandbox']
+
+  - name: node
+    id: 'client.web.test'
+    entrypoint: npm
+    args: ['test', '--', '--watchAll=false']
+    dir: 'client/web'
+    waitFor: ['sandbox', 'client.web.install']
+
+  # Deployments
 
   - name: 'gcr.io/cloud-builders/docker'
     id: 'server.push.gateway'
