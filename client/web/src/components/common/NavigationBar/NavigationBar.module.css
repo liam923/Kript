@@ -1,0 +1,44 @@
+.NavigationBar {
+    display: inline-flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.NavigationBar div {
+    display: inline-flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    padding: 20px;
+    border-radius: 15px;
+    box-sizing: border-box;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+}
+
+.NavigationBar .icon {
+    position: relative;
+    top: 5px;
+}
+
+.NavigationBar span {
+    margin-left: 10px;
+}
+
+.NavigationBar a:link {
+    text-decoration: none;
+    color: #55628D;
+}
+
+.NavigationBar a:visited {
+    text-decoration: none;
+    color: #55628D;
+}
+
+.NavigationBar a:hover {
+    text-decoration: none;
+}
+
+.NavigationBar a:active,
+.NavigationBar a.active {
+    text-decoration: none;
+    color: #537BFF;
+}
