@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 
+import Aux from '../../hoc/Aux/Aux';
 import Datum from '../../components/Datum/Datum';
-import NavigationBar from '../../components/common/NavigationBar/NavigationBar';
+import NavigationBar from '../../components/NavigationBar/NavigationBar';
 
 import styles from './Manager.module.css';
 
@@ -22,36 +23,61 @@ class Manager extends Component {
             ],
             notes: [],
         },
-        filter: ''
+        filter: '',
+        selectedDatumId: null,
+        adding: false,
+    }
+
+    // is there a better way of handling this using React internal tools?
+    filterListHandler = (key) => {
+        this.setState({ filter: key });
+    }
+
+    showDataHandler = (datum) => {
+        console.log(datum);
+        this.setState({ selectedDatumId: datum });
+    }
+
+    addDataHandler = () => {
+        this.setState({ adding: true });
+    }
+
+    logOutHandler = () => {
+        alert('Logged out!');
     }
 
     render() {
-        let items = Object.keys(this.state.info)
+        let items = Object.keys(this.state.info).filter((pKey) => (this.state.filter === '' ? true : pKey === this.state.filter))
             .map(pKey => {
                 return this.state.info[pKey].map((el, i) => {
-                    return <Datum key={pKey + i} type={pKey} datum={el} />
+                    return <Datum key={pKey + i} type={pKey} datum={el} clicked={this.showDataHandler} />
                 });
             }).reduce((arr, el) => {
                 return arr.concat(el);
             }, []);
 
-        console.log(items);
-
         return (
-            <div style={{display: 'flex'}}>
-                <div style={{width: '200px'}}>
-                    <div id='spacer' style={{height: '118px'}}></div>
-                    <NavigationBar />
-                </div>
-                <div style={{marginLeft: '32px', flexGrow: '1'}}>
-                    <h1>Kript</h1>
-                    <h2>My Data</h2>
-                    <div className={styles.Manager}>
-                        {items}
+            <Aux>
+                <div style={{ display: 'flex' }}>
+                    <div style={{ width: '200px' }}>
+                        <div id='spacer' style={{ width: '100%', height: '118px' }}></div>
+                        <NavigationBar
+                            filter={this.state.filter}
+                            itemClicked={this.filterListHandler}
+                            addDataClicked={this.addDataHandler}
+                            logOutClicked={this.logOutHandler} />
+                    </div>
+                    <div style={{ marginLeft: '32px', flexGrow: '1' }}>
+                        <h1>Kript</h1>
+                        <h2>My Data</h2>
+                        {items.length !== 0 ?
+                            <div className={styles.Manager}>
+                                {items}
+                            </div> : 
+                            <p style={{ textAlign: 'center' }}>Nothing to see here.</p>}
                     </div>
                 </div>
-
-            </div>
+            </Aux>
         );
     }
 }
