@@ -45,7 +45,8 @@ const datum = (props) => {
     }
 
     return (
-        <div className={styles.Datum}>
+        // revise onClick method; should it be ID based or not?
+        <div className={styles.Datum} onClick={() => props.clicked(props.datum)}>
             <div style={{ backgroundColor: 'beige', height: '100px', borderRadius: '15px 15px 0 0' }}></div>
             <div style={{ padding: '20px' }}>
                 {datum}
