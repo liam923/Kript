@@ -1,0 +1,17 @@
+.Datum {
+    background-color: white;
+    border-radius: 15px;
+    box-sizing: border-box;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+    display: inline-block;
+    overflow: hidden;
+}
+
+h4 {
+    margin: 0;
+}
+
+p {
+    margin: 0;
+    font-size: 1em;
+}
